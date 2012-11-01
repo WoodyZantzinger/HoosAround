@@ -35,7 +35,7 @@ public class ScheduleFragment extends Fragment{
 		
 		String GPS_URL = "locations/gps/" + latitude  + "/" + longitude + "/1";
 		
-		
+/*		
 		final Handler handler = new Handler(){
 			  @Override
 			  public void handleMessage(Message msg) {
@@ -86,6 +86,7 @@ public class ScheduleFragment extends Fragment{
             }
             
         });
+        */
 	}
 	
 	@Override

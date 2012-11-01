@@ -6,8 +6,7 @@ android:orientation="vertical" >
 	<ListView
 	android:id="@+id/friendsList"
 	android:layout_width="wrap_content"
-	android:layout_height="fill_parent""
-	    />
+	android:layout_height="fill_parent"/>
 	<TextView
 	android:id="@+id/header"
 	android:layout_width="wrap_content"
