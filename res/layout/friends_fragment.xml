@@ -2,18 +2,46 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-android:orientation="vertical" >
-	<ListView
-	android:id="@+id/friendsList"
-	android:layout_width="wrap_content"
-	android:layout_height="fill_parent"/>
-	<TextView
-	android:id="@+id/header"
-	android:layout_width="wrap_content"
+android:orientation="horizontal"
+android:weightSum="1.0" >
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="0dp"
 	android:layout_height="match_parent"
-	android:layout_gravity="center_horizontal|center_vertical"
-	android:layout_marginTop="20dip"
-	android:text="Classes!"
-	android:textAppearance="?android:attr/textAppearanceLarge"
-	android:textSize="30dip" />
+	android:orientation="vertical"
+	android:layout_weight=".30"
+	android:layout_marginRight="20dp" >
+	
+		<TextView 
+		    android:id="@+id/friendsListHeader"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="@style/sectionHeader"
+		    android:text="Friends"
+		    />
+		<ListView
+		android:id="@+id/friendsList"
+		android:layout_width="wrap_content"
+		android:layout_height="fill_parent"/>
+		
+	</LinearLayout>
+	
+	<RelativeLayout
+	    android:layout_width="0dp"
+		android:layout_height="match_parent" 
+		android:layout_weight=".70" >
+	    <TextView 
+		    android:id="@+id/scheduleListHeader"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="@style/sectionHeader"
+		    android:text="Schedule"
+		    android:layout_alignParentTop="true"
+		    />
+	    <ListView
+			android:id="@+id/classList"
+			android:layout_below="@id/scheduleListHeader"
+			android:layout_width="wrap_content"
+			android:layout_height="fill_parent"/>
+	    
+	</RelativeLayout>
 </LinearLayout>
