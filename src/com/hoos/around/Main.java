@@ -47,20 +47,24 @@ public class Main extends Activity {
         
         
         //initiating both tabs and set text to it.
+        ActionBar.Tab HomeTab = actionbar.newTab().setText("Home");
         ActionBar.Tab FriendsTab = actionbar.newTab().setText("Friends");
         ActionBar.Tab ScheduleTab = actionbar.newTab().setText("Schedule");
         ActionBar.Tab SettingsTab = actionbar.newTab().setText("Settings");
  
+        Fragment HomeFrag = new HomeFragment();
         Fragment FriendsFrag = new FriendsFragment();
         Fragment ScheduleFrag = new ScheduleFragment();
         Fragment SettingsFrag = new SettingsFragment();
         
         //set the Tab listener. Now we can listen for clicks.
+        HomeTab.setTabListener(new MyTabsListener(HomeFrag));
         FriendsTab.setTabListener(new MyTabsListener(FriendsFrag));
         ScheduleTab.setTabListener(new MyTabsListener(ScheduleFrag));
         SettingsTab.setTabListener(new MyTabsListener(SettingsFrag));
         
         //add the two tabs to the actionbar
+        actionbar.addTab(HomeTab);
         actionbar.addTab(FriendsTab);
         actionbar.addTab(ScheduleTab);
         actionbar.addTab(SettingsTab);
