@@ -120,7 +120,7 @@ public class FriendsFragment extends Fragment{
 	    public View getView(int position, View convertView, ViewGroup parent) {
 	    	final Class tempClass = this.getItem(position);
     	    if (convertView == null) {
-    	    	convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.friends_fragment_userlist, parent, false);
+    	    	convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.friends_fragment_schedulelist, parent, false);
     	    }
 	    	TextView label = (TextView)convertView.findViewById(R.id.name);
 	    	final ImageView image = (ImageView)convertView.findViewById(R.id.list_image);
@@ -155,7 +155,7 @@ public class FriendsFragment extends Fragment{
 		super.onCreate(savedInstanceState);
 		
 		userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
-		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_userlist);
+		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);
 		
         RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
             @Override
@@ -207,6 +207,7 @@ public class FriendsFragment extends Fragment{
 			   @Override
 			   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
 				   User selected = (User)adapter.getItemAtPosition(position);
+				   
 				   LoadSchedule(selected);
 			   } 
 			});

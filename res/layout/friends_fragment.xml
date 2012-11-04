@@ -21,7 +21,8 @@ android:weightSum="1.0" >
 		<ListView
 		android:id="@+id/friendsList"
 		android:layout_width="wrap_content"
-		android:layout_height="fill_parent"/>
+		android:layout_height="fill_parent"
+		android:choiceMode="singleChoice"/>
 		
 	</LinearLayout>
 	
@@ -29,17 +30,27 @@ android:weightSum="1.0" >
 	    android:layout_width="0dp"
 		android:layout_height="match_parent" 
 		android:layout_weight=".70" >
+	    <View
+	        android:id="@+id/shadow"
+	        android:layout_alignParentLeft="true"
+	        android:layout_width="5dip"
+	        android:layout_height="fill_parent"
+	        android:background="@drawable/drop_shadow"
+	        android:layout_marginRight="20dp"
+	        />
 	    <TextView 
 		    android:id="@+id/scheduleListHeader"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    style="@style/sectionHeader"
 		    android:text="Schedule"
+		    android:layout_toRightOf="@id/shadow"
 		    android:layout_alignParentTop="true"
 		    />
 	    <ListView
 			android:id="@+id/classList"
 			android:layout_below="@id/scheduleListHeader"
+			android:layout_toRightOf="@id/shadow"
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"/>
 	    
