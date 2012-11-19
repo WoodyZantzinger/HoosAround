@@ -37,6 +37,7 @@ public class Login extends Activity{
         super.onActivityResult(requestCode, resultCode, data);
         facebook.authorizeCallback(requestCode, resultCode, data);
         System.out.println("login result............................");
+        finish();
     }
 
 }
