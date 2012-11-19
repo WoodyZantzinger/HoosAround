@@ -6,7 +6,9 @@ import android.app.ActionBar.TabListener;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 public class Main extends Activity {
@@ -74,5 +76,9 @@ public class Main extends Activity {
 		ft.replace(R.id.details, frag);
         //ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         ft.commit();
+	}
+	public void promptLogin(View view) {
+		Intent intent = new Intent(this, Login.class);
+		startActivity(intent);
 	}
 }
