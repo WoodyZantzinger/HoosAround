@@ -124,25 +124,10 @@ public class ScheduleFragment extends Fragment{
 	            @Override
 	            public void onSuccess(JSONArray classes) {
 	                // Grab A Schedule
-	            	Schedule schedule = new Schedule();
-	            	schedule.courses = new ArrayList<Class>();
-	            	
-					try {
-						
-						for(int x = 0; x < classes.length(); x++) {
-							Class temp = new Class();
-							JSONObject JSONSchedule = (JSONObject)classes.get(x);
-							schedule.user_id = JSONSchedule.getJSONObject("Schedule").getInt("user_id");
-							temp.course_id = JSONSchedule.getJSONArray("Course").getJSONObject(0).getInt("course_id");
-							temp.course_start = JSONSchedule.getJSONArray("Course").getJSONObject(0).getString("course_start");
-							temp.course_end = JSONSchedule.getJSONArray("Course").getJSONObject(0).getString("course_end");
-							temp.course_mnem = JSONSchedule.getJSONArray("Course").getJSONObject(0).getString("course_mnem");
-							temp.location_id = JSONSchedule.getJSONArray("Course").getJSONObject(0).getInt("location_id");
-							schedule.courses.add(temp);
-						}
-						
+	            	try {
+	            		Schedule new_schedule = RestClient.parse_schedule(classes);
 						scheduleAdapter.clear();
-						scheduleAdapter.addAll(schedule.courses);
+						scheduleAdapter.addAll(new_schedule.courses);
 						scheduleAdapter.notifyDataSetChanged();
 						Log.d("JSON", "MSG RECIEVED");
 						
@@ -194,10 +179,15 @@ public class ScheduleFragment extends Fragment{
 			
 			@Override
 			public void onClick(View arg0) {
+				
+				//
+				// SET UP THE DIALOG THAT WILL POPUP WHEN THE ADD BUTTON IS CLICKED
+				//
+				
 				final Dialog addDialog = new Dialog(arg0.getContext(), R.style.CustomDialogTheme);
 				addDialog.setContentView(R.layout.add_class_dialog);
 				
-				Spinner class_spinner = (Spinner) addDialog.findViewById(R.id.class_spinner);
+				final Spinner class_spinner = (Spinner) addDialog.findViewById(R.id.class_spinner);
 				ArrayAdapter<Class> dataAdapter = new ArrayAdapter<Class>(arg0.getContext(),
 					android.R.layout.simple_spinner_item, ClassList);
 				dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -205,10 +195,42 @@ public class ScheduleFragment extends Fragment{
 				
 				addDialog.show();
 				
+				//
+				// SET UP THE BUTTON WITHIN THE DIALOG
+				//
+				
 				Button close_btn = (Button) addDialog.findViewById(R.id.submit_button);
 				close_btn.setOnClickListener(new View.OnClickListener() {
 				    public void onClick(View v) {
-				    	addDialog.dismiss();
+				  
+						RestClient.get("schedules/add/" + StaticUserInfo.getUserID() + "/" + ((Class)class_spinner.getSelectedItem()).course_id, null, null, new JsonHttpResponseHandler() {
+				            @Override
+				            public void onSuccess(JSONArray classes) {
+				                // Grab A Schedule
+				            	try {
+				            		Schedule new_schedule = RestClient.parse_schedule(classes);
+									scheduleAdapter.clear();
+									scheduleAdapter.addAll(new_schedule.courses);
+									scheduleAdapter.notifyDataSetChanged();
+							    	addDialog.dismiss();
+									Log.d("JSON", "MSG RECIEVED");
+									
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									Log.d("JSON", e.getMessage());
+							    	addDialog.dismiss();
+								}
+				            }
+				            
+				            @Override
+				            public void onFailure(Throwable e, String response) {
+								Log.d("JSON", response);
+								Log.d("JSON", RestClient.getAbsoluteUrl("courses/view/"));
+				            }
+				            
+				        });	
+				    	
+				    	
 				    }
 				});
 				
@@ -220,7 +242,7 @@ public class ScheduleFragment extends Fragment{
 		detail_location = (TextView)view.findViewById(R.id.scheduleDetailLocation);
 		
 		User temp_user = new User();
-		temp_user.user_id = 1;
+		temp_user.user_id = StaticUserInfo.getUserID();
 		
 		LoadSchedule(temp_user);
 		
@@ -231,31 +253,5 @@ public class ScheduleFragment extends Fragment{
 		TextView view = (TextView) getView().findViewById(R.id.header);
 		view.setText(item);
 	}
-	
-	/*
-	 * 
-	 * 
-	 final ImageView image = (ImageView)convertView.findViewById(R.id.list_image);
-	    	//image.setImageDrawable(getResources().getDrawable(R.drawable.no_image));
-	        Bitmap cachedImage = null;
-	        try {
-	          cachedImage = imageLoader.loadImage("http://uva-cs4720-spinach.appspot.com/serve/" + tempClass.location_id, new ImageLoadedListener() {
-	        	  public void imageLoaded(Bitmap imageBitmap) {
-	        		  image.setImageBitmap(imageBitmap);
-	        		  Log.e("IMAGE", "GOOD remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + tempClass.location_id);
-	        		  notifyDataSetChanged();                
-	          	  }
-	          });
-
-	        } catch (MalformedURLException e) {
-	          Log.e("IMAGE", "Bad remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + tempClass.location_id, e);
-	        }
-
-	        if( cachedImage != null ) {
-        	      image.setImageBitmap(cachedImage);
-	        }
-
-	 * 
-	 */
 	
 }
