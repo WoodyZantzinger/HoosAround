@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="horizontal"
+android:weightSum="1.0" >
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="0dp"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:layout_weight=".30"
+	android:layout_marginRight="20dp" >
+	
+		<TextView 
+		    android:id="@+id/scheduleListHeader"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="@style/sectionHeader"
+		    android:text="Your Schedule"
+		    />
+		<ListView
+			android:id="@+id/scheduleList"
+			android:layout_width="wrap_content"
+			android:layout_height="0.0dip"
+			android:choiceMode="singleChoice"
+			android:layout_weight="1.0"/>
+		
+       	<Button
+		    android:id="@+id/scheduleListAdd"
+		    android:layout_width="fill_parent"
+		    android:layout_height="wrap_content"
+		    android:text="Add A Class"
+		    />
+		
+	</LinearLayout>
+	
+	<RelativeLayout
+	    android:layout_width="0dp"
+		android:layout_height="match_parent" 
+		android:layout_weight=".70" >
+	    <View
+	        android:id="@+id/shadow"
+	        android:layout_alignParentLeft="true"
+	        android:layout_width="5dip"
+	        android:layout_height="fill_parent"
+	        android:background="@drawable/drop_shadow"
+	        android:layout_marginRight="20dp"
+	        />
+	    <TextView 
+		    android:id="@+id/scheduleDetailHeader"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="@style/sectionHeader"
+		    android:layout_toRightOf="@id/shadow"
+		    android:layout_alignParentTop="true"
+		    />
+	    <LinearLayout
+	        android:orientation="horizontal"
+	        android:paddingLeft="4.0dip"
+	        android:paddingTop="5.0dip"
+	        android:paddingRight="4.0dip"
+	        android:paddingBottom="1.0dip"
+	        android:layout_width="fill_parent" android:layout_height="wrap_content"
+	        android:layout_toRightOf="@id/shadow"
+	        android:layout_below="@id/scheduleDetailHeader">
+	   	    <TextView 
+			    android:id="@+id/scheduleDetailTime"
+			    android:layout_width="0.0dip"
+			    android:layout_height="wrap_content"
+				android:layout_weight="1.0"
+				android:textSize="20dp"
+			    />
+	       	<TextView 
+			    android:id="@+id/scheduleDetailLocation"
+			    android:layout_width="0.0dip"
+			    android:layout_height="wrap_content"
+				android:layout_weight="1.0"
+				android:textSize="20dp"
+			    />
+       	</LinearLayout>
+       	<LinearLayout
+	        android:orientation="horizontal"
+	        android:paddingLeft="4.0dip"
+	        android:paddingTop="5.0dip"
+	        android:paddingRight="4.0dip"
+	        android:paddingBottom="1.0dip"
+	        android:layout_width="fill_parent" android:layout_height="wrap_content"
+	        android:layout_toRightOf="@id/shadow"
+	        android:layout_alignParentBottom="true">
+	       	<Button
+			    android:id="@+id/scheduleDetailRemove"
+			    android:layout_width="0.0dip"
+			    android:layout_height="wrap_content"
+			    android:text="Remove This Class"
+				android:layout_weight="1.0"
+			    />
+	       	<Button 
+			    android:id="@+id/scheduleDetailEdit"
+			    android:layout_width="0.0dip"
+			    android:layout_height="wrap_content"
+			    android:text="Edit This Class"
+				android:layout_weight="1.0"
+			    />
+	     </LinearLayout>
+	</RelativeLayout>
+</LinearLayout>
