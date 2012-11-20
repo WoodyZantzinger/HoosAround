@@ -37,6 +37,11 @@ public class Login extends Activity{
         super.onActivityResult(requestCode, resultCode, data);
         facebook.authorizeCallback(requestCode, resultCode, data);
         System.out.println("login result............................");
+        
+        //LOG THE FACEBOOK INFORMATION HERE
+        //THIS IS A PLACEHOLDER
+        StaticUserInfo.setUserID(1);
+        
         finish();
     }
 
