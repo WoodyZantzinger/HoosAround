@@ -6,4 +6,9 @@ public class Class {
 	public int location_id;
 	public String course_start;
 	public String course_end;
+	
+    @Override
+    public String toString() {
+        return course_mnem + " @ " + course_start;
+    }
 }

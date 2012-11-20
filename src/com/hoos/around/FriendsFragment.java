@@ -16,6 +16,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +31,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class FriendsFragment extends Fragment{
+	
+	/*
+	 * 	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+		Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		latitude = current.getLatitude();
+		longitude = current.getLatitude();
+		
+		String GPS_URL = "locations/gps/" + latitude  + "/" + longitude + "/1";
+	 * 
+	 */
 	
 	private ArrayList<User> UserList = new ArrayList<User>();
 	private UserAdapter userAdapter;
@@ -103,7 +115,7 @@ public class FriendsFragment extends Fragment{
 
 	}
 	
-	public class ScheduleAdapter extends ArrayAdapter<Class>{
+	private class ScheduleAdapter extends ArrayAdapter<Class>{
 
 	    Context context; 
 	    int layoutResourceId;
