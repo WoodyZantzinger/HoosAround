@@ -13,7 +13,6 @@ public class Login extends Activity{
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-    	System.out.println("login created............................");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
@@ -35,8 +34,7 @@ public class Login extends Activity{
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        facebook.authorizeCallback(requestCode, resultCode, data);
-        System.out.println("login result............................");
+        facebook.authorizeCallback(requestCode, resultCode, data);        
         
         //LOG THE FACEBOOK INFORMATION HERE
         //THIS IS A PLACEHOLDER
