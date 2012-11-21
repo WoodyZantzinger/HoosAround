@@ -181,7 +181,8 @@ public class FriendsFragment extends Fragment{
 						temp.user_id = JSONUser.getJSONObject("User").getInt("user_id");
 						temp.user_first = JSONUser.getJSONObject("User").getString("user_first");
 						temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-						temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
+						//temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
+						System.out.println(temp.user_id);
 						UserList.add(temp);
 					}
 				} catch (JSONException e) {

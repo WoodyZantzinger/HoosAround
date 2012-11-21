@@ -11,10 +11,13 @@ import org.json.JSONObject;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.JsonReader;
+
 import com.facebook.android.*;
 import com.facebook.android.AsyncFacebookRunner.RequestListener;
 import com.facebook.android.Facebook.*;
 import com.facebook.android.AsyncFacebookRunner;
+import com.loopj.android.http.JsonHttpResponseHandler;
 
 public class Login extends Activity{
 	Facebook facebook = new Facebook("332459203518890");
@@ -44,7 +47,7 @@ public class Login extends Activity{
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        facebook.authorizeCallback(requestCode, resultCode, data);        
+        facebook.authorizeCallback(requestCode, resultCode, data);
         mAsyncRunner.request("me", new IdRequestListener());
         mAsyncRunner.request("me/friends", new FriendsRequestListener());
         finish();
@@ -56,12 +59,25 @@ public class Login extends Activity{
 		public void onComplete(String response, Object state) {
 			try {
 				JSONObject json = Util.parseJson(response);
-				StaticUserInfo.setFbID(json.getString("id"));
+				String id = json.getString("id");
+				StaticUserInfo.setFbID(id);
+				RestClient.get("/users/fb_id/" + id, null, null, new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray rsp) {
+						if (rsp.length()==0) {
+							//no content in response json means no user with this fb id exists
+							//TODO handle new user by making a database entry for them and letting them make a schedule
+							
+						}
+					}
+					@Override
+					public void onFailure(Throwable e, String rsp) {
+						
+					}
+				});
 			} catch (FacebookError e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -69,27 +85,23 @@ public class Login extends Activity{
 
 		@Override
 		public void onIOException(IOException e, Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onFileNotFoundException(FileNotFoundException e,
 				Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onMalformedURLException(MalformedURLException e,
 				Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onFacebookError(FacebookError e, Object state) {
-			// TODO Auto-generated method stub
 			
 		}
     	
@@ -104,38 +116,35 @@ public class Login extends Activity{
 				for (int i=0; i<arr.length(); i++) {
 					StaticUserInfo.addFbFriend(arr.optJSONObject(i).getString("id"));
 				}
+				for (int i=0; i<StaticUserInfo.getFbFriends().size(); i++) {
+					System.out.println("f: "+StaticUserInfo.getFbFriends().get(i));
+				}
 			} catch (FacebookError e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 
 		@Override
 		public void onIOException(IOException e, Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onFileNotFoundException(FileNotFoundException e,
 				Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onMalformedURLException(MalformedURLException e,
 				Object state) {
-			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
 		public void onFacebookError(FacebookError e, Object state) {
-			// TODO Auto-generated method stub
 			
 		}
     	
