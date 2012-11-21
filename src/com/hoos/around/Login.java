@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,10 +45,8 @@ public class Login extends Activity{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         facebook.authorizeCallback(requestCode, resultCode, data);        
-        
-        //LOG THE FACEBOOK INFORMATION HERE
-        //THIS IS A PLACEHOLDER
         mAsyncRunner.request("me", new IdRequestListener());
+        mAsyncRunner.request("me/friends", new FriendsRequestListener());
         finish();
     }
     
@@ -58,7 +57,6 @@ public class Login extends Activity{
 			try {
 				JSONObject json = Util.parseJson(response);
 				StaticUserInfo.setFbID(json.getString("id"));
-				System.out.println(StaticUserInfo.getFbID());
 			} catch (FacebookError e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -67,6 +65,52 @@ public class Login extends Activity{
 				e.printStackTrace();
 			}
 			
+		}
+
+		@Override
+		public void onIOException(IOException e, Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onFileNotFoundException(FileNotFoundException e,
+				Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onMalformedURLException(MalformedURLException e,
+				Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onFacebookError(FacebookError e, Object state) {
+			// TODO Auto-generated method stub
+			
+		}
+    	
+    }
+    private class FriendsRequestListener implements RequestListener{
+
+		@Override
+		public void onComplete(String response, Object state) {
+			try {
+				JSONObject json = Util.parseJson(response);
+				JSONArray arr = json.getJSONArray("data");
+				for (int i=0; i<arr.length(); i++) {
+					StaticUserInfo.addFbFriend(arr.optJSONObject(i).getString("id"));
+				}
+			} catch (FacebookError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		@Override
