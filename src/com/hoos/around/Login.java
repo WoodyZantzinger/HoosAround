@@ -59,18 +59,43 @@ public class Login extends Activity{
 		@Override
 		public void onComplete(String response, Object state) {
 			try {
-				JSONObject json = Util.parseJson(response);
+				final JSONObject json = Util.parseJson(response);
 				final String id = json.getString("id");
+				System.out.println(json.toString());
 				RestClient.get("/users/fb_id/" + id, null, null, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray rsp) {
 						if (rsp.length()==0) {
 							//no content in response json means no user with this fb id exists
-							//TODO handle new user by making a database entry for them and letting them make a schedule
-							
+							System.out.println("New user logged in");
+							try {
+								RestClient.get("/users/add/"+json.getString("first_name")+"/"+json.getString("last_name")+"/"+id, null, null, new JsonHttpResponseHandler() {
+									@Override
+									public void onSuccess(JSONArray rsp) {
+										//TODO handle user being added
+										StaticUserInfo.setFbID(id);
+										System.out.println("new user's fb id: "+id);
+										try {
+											StaticUserInfo.setUserID(rsp.getJSONObject(0).optJSONObject("User").getInt("user_id"));
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}
+									@Override
+									public void onFailure(Throwable e, String rsp) {
+										//TODO handle error adding user
+										System.err.println(e.getMessage());
+									}
+								});
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 						else {
 							StaticUserInfo.setFbID(id);
+							System.out.println("user's fb id: "+id);
 							try {
 								StaticUserInfo.setUserID(rsp.getJSONObject(0).optJSONObject("User").getInt("user_id"));
 							} catch (JSONException e) {

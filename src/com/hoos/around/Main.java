@@ -65,7 +65,7 @@ public class Main extends Activity {
         ScheduleTab.setTabListener(new MyTabsListener(ScheduleFrag));
         SettingsTab.setTabListener(new MyTabsListener(SettingsFrag));
         
-        //add the two tabs to the actionbar
+        //add the tabs to the actionbar
         actionbar.addTab(HomeTab);
         actionbar.addTab(FriendsTab);
         actionbar.addTab(ScheduleTab);
@@ -74,7 +74,10 @@ public class Main extends Activity {
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		HomeFragment frag = (HomeFragment)Fragment.instantiate(this, HomeFragment.class.getName());
 		ft.replace(R.id.details, frag);
-        //ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+        
+//		FriendsFragment frag = (FriendsFragment)Fragment.instantiate(this, FriendsFragment.class.getName());
+//		ft.replace(R.id.details, frag);
+		//ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         ft.commit();
 	}
 	public void promptLogin(View view) {

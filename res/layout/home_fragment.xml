@@ -2,7 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:weightSum="1.0" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="40dp"
+        android:text="Welcome to HoosAround, the best app for finding friends near you! Click the Friends tab to see where your friends are."
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textSize="30sp" />
 	
 </LinearLayout>
