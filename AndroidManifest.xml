@@ -13,7 +13,7 @@
         android:theme="@android:style/Theme.Holo.Light">
         <activity
             android:name=".Main"
-            android:label="Main Activity" >
+            android:label="HoosAround" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

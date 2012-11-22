@@ -1,10 +1,13 @@
 package com.hoos.around;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.util.Log;
 
 import com.facebook.android.FacebookError;
 import com.facebook.android.Util;
@@ -13,7 +16,7 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 public class StaticUserInfo {
 	static private int user_id; //user id stored in mysql db
 	static private String fb_id; //facebook's user id for logged in user
-	static private ArrayList<String> fb_friends = new ArrayList<String>(); //list of facebook friends of user
+	static private HashSet<String> fb_friends = new HashSet<String>(); //list of facebook friends of user
 	static private Boolean logged_in = false;
 	
 	static Boolean isLoggedIn() {
@@ -42,11 +45,11 @@ public class StaticUserInfo {
 		StaticUserInfo.fb_id = fb_id;
 	}
 
-	public static ArrayList<String> getFbFriends() {
+	public static HashSet<String> getFbFriends() {
 		return fb_friends;
 	}
 
-	public static void setFbFriends(ArrayList<String> fb_friends) {
+	public static void setFbFriends(HashSet<String> fb_friends) {
 		StaticUserInfo.fb_friends = fb_friends;
 	}
 	
@@ -63,6 +66,11 @@ public class StaticUserInfo {
 				else {
 					//friend is not HoosAround user
 				}
+			}
+			@Override
+			public void onFailure(Throwable e, String rsp) {
+				Log.d("JSON", rsp);
+				Log.d("JSON", RestClient.getAbsoluteUrl("/users/fb_id/"+fr));
 			}
 		});
 	}

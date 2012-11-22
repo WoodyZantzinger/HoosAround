@@ -3,6 +3,7 @@ package com.hoos.around;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
 import java.util.zip.Inflater;
@@ -169,7 +170,7 @@ public class FriendsFragment extends Fragment{
 		userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
 		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);
 		
-        RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
+        /*RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray users) {
                 // Grab Users
@@ -182,28 +183,67 @@ public class FriendsFragment extends Fragment{
 						temp.user_first = JSONUser.getJSONObject("User").getString("user_first");
 						temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
 						//temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
-						System.out.println(temp.user_id);
 						UserList.add(temp);
 					}
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					Log.d("JSON", e.getMessage());
 				}
-
+				*/
                 // Do something with the response
-				userAdapter.clear();
-				userAdapter.addAll(UserList);
-				userAdapter.notifyDataSetChanged();
+		
+				UserList.clear();
+				Object[] friends = StaticUserInfo.getFbFriends().toArray();
+				for (int i=0; i<friends.length; i++) {
+					final String friendFbId = friends[i].toString();
+					RestClient.get("/users/fb_id/" + friendFbId, null, null, new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(JSONArray rsp) {
+							User temp = new User();
+							JSONObject JSONUser=null;
+							try {
+								JSONUser = rsp.getJSONObject(0);
+							} catch (JSONException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							try {
+								temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+								temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+								temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+//							if (UserList.add(temp)) {
+//								System.out.println(temp.user_first + " added");
+//							}
+//							else {
+//								System.out.println(temp.user_first + " not added");
+//							}
+							userAdapter.add(temp);
+							userAdapter.notifyDataSetChanged();
+						}
+						@Override
+						public void onFailure(Throwable e, String rsp) {
+							System.err.println(e.getMessage());
+							Log.d("JSON", rsp);
+							Log.d("JSON", RestClient.getAbsoluteUrl("/users/fb_id/"+friendFbId));
+						}
+					});
+				}
+				//userAdapter.clear();
+				//userAdapter.notifyDataSetChanged();
             }
             
-            @Override
+           /* @Override
             public void onFailure(Throwable e, String response) {
 				Log.d("JSON", response);
 				Log.d("JSON", RestClient.getAbsoluteUrl("courses/view/"));
             }
             
-        });		
-	}
+        });	
+	}*/
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {

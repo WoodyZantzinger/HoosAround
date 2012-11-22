@@ -59,8 +59,7 @@ public class Login extends Activity{
 		public void onComplete(String response, Object state) {
 			try {
 				JSONObject json = Util.parseJson(response);
-				String id = json.getString("id");
-				StaticUserInfo.setFbID(id);
+				final String id = json.getString("id");
 				RestClient.get("/users/fb_id/" + id, null, null, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray rsp) {
@@ -68,6 +67,15 @@ public class Login extends Activity{
 							//no content in response json means no user with this fb id exists
 							//TODO handle new user by making a database entry for them and letting them make a schedule
 							
+						}
+						else {
+							StaticUserInfo.setFbID(id);
+							try {
+								StaticUserInfo.setUserID(rsp.getJSONObject(0).optJSONObject("User").getInt("user_id"));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 					@Override
@@ -115,9 +123,6 @@ public class Login extends Activity{
 				JSONArray arr = json.getJSONArray("data");
 				for (int i=0; i<arr.length(); i++) {
 					StaticUserInfo.addFbFriend(arr.optJSONObject(i).getString("id"));
-				}
-				for (int i=0; i<StaticUserInfo.getFbFriends().size(); i++) {
-					System.out.println("f: "+StaticUserInfo.getFbFriends().get(i));
 				}
 			} catch (FacebookError e) {
 				e.printStackTrace();
