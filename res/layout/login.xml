@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="40dp"
+        android:text="If you are stuck on this screen hit the back or escape key. This is a bug that happens when you log in on a device without the Facebook app that we will fix shortly."
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+</LinearLayout>
