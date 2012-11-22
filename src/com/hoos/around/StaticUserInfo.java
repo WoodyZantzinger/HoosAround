@@ -49,8 +49,30 @@ public class StaticUserInfo {
 		return fb_friends;
 	}
 
-	public static void setFbFriends(HashSet<String> fb_friends) {
-		StaticUserInfo.fb_friends = fb_friends;
+	public static void setFbFriends(final HashSet<String> friends) {
+		RestClient.get("/users/view/", null, null, new JsonHttpResponseHandler() {
+			@Override
+			public void onSuccess(JSONArray rsp) {
+				for (int i=0; i<rsp.length(); i++) {
+				try {
+					JSONObject user = rsp.getJSONObject(i);
+					String fb_id = user.optJSONObject("User").getString("fb_id");
+					System.out.println("checking " + fb_id);
+					if (friends.contains(fb_id)) {
+						System.out.println("f: " + fb_id);
+						fb_friends.add(fb_id);
+					}
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				}
+			}
+			@Override
+			public void onFailure(Throwable e, String rsp) {
+				
+			}
+		});
 	}
 	
 	//checks to see if friend is HoosAround user and if so adds them

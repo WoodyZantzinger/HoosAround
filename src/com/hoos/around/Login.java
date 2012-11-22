@@ -3,6 +3,7 @@ package com.hoos.around;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -121,9 +122,12 @@ public class Login extends Activity{
 			try {
 				JSONObject json = Util.parseJson(response);
 				JSONArray arr = json.getJSONArray("data");
+				HashSet<String> friends = new HashSet<String>();
 				for (int i=0; i<arr.length(); i++) {
-					StaticUserInfo.addFbFriend(arr.optJSONObject(i).getString("id"));
+					friends.add(arr.optJSONObject(i).getString("id"));
+					//StaticUserInfo.addFbFriend(arr.optJSONObject(i).getString("id"));
 				}
+				StaticUserInfo.setFbFriends(friends);
 			} catch (FacebookError e) {
 				e.printStackTrace();
 			} catch (JSONException e) {
