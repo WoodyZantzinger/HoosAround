@@ -61,10 +61,11 @@ public class Login extends Activity{
 			try {
 				final JSONObject json = Util.parseJson(response);
 				final String id = json.getString("id");
-				System.out.println(json.toString());
+				System.out.println("fbid rsp: " + json.toString());
 				RestClient.get("/users/fb_id/" + id, null, null, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray rsp) {
+						System.out.println("userid rsp: " + rsp.toString());
 						if (rsp.length()==0) {
 							//no content in response json means no user with this fb id exists
 							System.out.println("New user logged in");
