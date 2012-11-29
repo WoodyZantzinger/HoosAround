@@ -60,18 +60,18 @@ public class StaticUserInfo {
 			@Override
 			public void onSuccess(JSONArray rsp) {
 				for (int i=0; i<rsp.length(); i++) {
-				try {
-					JSONObject user = rsp.getJSONObject(i);
-					String fb_id = user.optJSONObject("User").getString("fb_id");
-					System.out.println("checking " + fb_id);
-					if (friends.contains(fb_id)) {
-						System.out.println("f: " + fb_id);
-						fb_friends.add(fb_id);
+					try {
+						JSONObject user = rsp.getJSONObject(i);
+						String fb_id = user.optJSONObject("User").getString("fb_id");
+						System.out.println("checking " + fb_id);
+						if (friends.contains(fb_id)) {
+							System.out.println("f: " + fb_id);
+							fb_friends.add(fb_id);
+						}
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						Log.d("FACEBOOK_FRIENDS", e.getMessage());
 					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				}
 			}
 			@Override
