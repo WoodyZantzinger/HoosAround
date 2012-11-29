@@ -36,12 +36,14 @@ public class HomeFragment extends Fragment{
 	Facebook facebook = new Facebook("332459203518890");
     AsyncFacebookRunner mAsyncRunner = new AsyncFacebookRunner(facebook);
     String fb_id = "";
+    Boolean	Login_Attempted = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		 if(!StaticUserInfo.isLoggedIn()) {	//If user is not logged in AND NO ERROR, Try to log him in
+		 if(!StaticUserInfo.isLoggedIn() && !Login_Attempted) {	//If user is not logged in AND NO ERROR, Try to log him in
+			 Login_Attempted = true;
 		        facebook.authorize(this.getActivity(), new DialogListener() {
 		            @Override
 		            public void onComplete(Bundle values) {
