@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.JsonReader;
+import android.util.Log;
 
 import com.facebook.android.*;
 import com.facebook.android.AsyncFacebookRunner.RequestListener;
@@ -29,20 +30,29 @@ public class Login extends Activity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-
-        facebook.authorize(this, new DialogListener() {
-            @Override
-            public void onComplete(Bundle values) {}
-
-            @Override
-            public void onFacebookError(FacebookError error) {}
-
-            @Override
-            public void onError(DialogError e) {}
-
-            @Override
-            public void onCancel() {}
-        });
+        
+        if(!StaticUserInfo.isLoggedIn()) {	//If user is not logged in, Try to log him in
+	        facebook.authorize(this, new DialogListener() {
+	            @Override
+	            public void onComplete(Bundle values) {
+	            	Log.d("FB","Facebook Success!");
+	                finish();
+	            }
+	
+	            @Override
+	            public void onFacebookError(FacebookError error) {
+	            	Log.d("FB","Facebook Facebook Error");
+	            }
+	
+	            @Override
+	            public void onError(DialogError e) {
+	            	Log.d("FB","Facebook Error");
+	            }
+	
+	            @Override
+	            public void onCancel() {}
+	        });
+        }
     }
 
     @Override
@@ -51,7 +61,6 @@ public class Login extends Activity{
         facebook.authorizeCallback(requestCode, resultCode, data);
         mAsyncRunner.request("me", new IdRequestListener());
         mAsyncRunner.request("me/friends", new FriendsRequestListener());
-        finish();
     }
     
     private class IdRequestListener implements RequestListener{

@@ -18,10 +18,20 @@ public class StaticUserInfo {
 	static private String fb_id; //facebook's user id for logged in user
 	static private HashSet<String> fb_friends = new HashSet<String>(); //list of facebook friends of user
 	static private Boolean logged_in = false;
+	static private Boolean Error = false;
 	
 	static Boolean isLoggedIn() {
 		return logged_in;
 	}
+	
+	static Boolean wasError() {
+		return Error;
+	}
+	
+	static void setError(Boolean status) {
+		Error = status;
+	}
+	
 	
 	static void setUserID(int id) {
 		logged_in = true;
