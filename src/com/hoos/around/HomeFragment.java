@@ -2,7 +2,9 @@ package com.hoos.around;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.HashSet;
 
 import org.json.JSONArray;
@@ -26,6 +28,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class HomeFragment extends Fragment{
@@ -33,35 +36,44 @@ public class HomeFragment extends Fragment{
 	Facebook facebook = new Facebook("332459203518890");
     AsyncFacebookRunner mAsyncRunner = new AsyncFacebookRunner(facebook);
     String fb_id = "";
+    Boolean	Login_Attempted = false;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		 if(!StaticUserInfo.isLoggedIn() && !StaticUserInfo.wasError()) {	//If user is not logged in AND NO ERROR, Try to log him in
+		 if(!StaticUserInfo.isLoggedIn() && !Login_Attempted) {	//If user is not logged in AND NO ERROR, Try to log him in
+			 Login_Attempted = true;
 		        facebook.authorize(this.getActivity(), new DialogListener() {
 		            @Override
 		            public void onComplete(Bundle values) {
 		            	Log.d("FB","Facebook Success!");
+		            	StaticUserInfo.isLoggedIn(true);
 		                mAsyncRunner.request("me", new IdRequestListener());
 		                mAsyncRunner.request("me/friends", new FriendsRequestListener());
+		                
+		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Logged into Facebook Succesfully", Toast.LENGTH_SHORT);
+		                toast.show();
 		            }
 		
 		            @Override
 		            public void onFacebookError(FacebookError error) {
 		            	Log.d("FB","Facebook Facebook Error");
-		            	StaticUserInfo.setError(true);
+		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
+		                toast.show();
 		            }
 		
 		            @Override
 		            public void onError(DialogError e) {
 		            	Log.d("FB","Facebook Error");
-		            	StaticUserInfo.setError(true);
+		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
+		                toast.show();
 		            }
 		
 		            @Override
 		            public void onCancel() {
-		            	StaticUserInfo.setError(true);
+		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Cancelled", Toast.LENGTH_SHORT);
+		                toast.show();
 		            }
 		        });
 	        }
@@ -101,14 +113,15 @@ public class HomeFragment extends Fragment{
 						public void onSuccess(JSONArray rsp) {
 							if (rsp.length()==0) {
 								//no content in response json means no user with this fb id exists
-								System.out.println("New user logged in");
 								try {
-									RestClient.get("/users/add/"+json.getString("first_name")+"/"+json.getString("last_name")+"/"+id, null, null, new JsonHttpResponseHandler() {
+									String PATH = "/users/add/"+URLEncoder.encode(json.getString("first_name"),"UTF-8")+"/"+URLEncoder.encode(json.getString("last_name"),"UTF-8")+"/"+id;
+									Log.d("WARN","USER NOT IN DB: " + PATH);
+									RestClient.get(PATH, null, null, new JsonHttpResponseHandler() {
 										@Override
 										public void onSuccess(JSONArray rsp) {
 											//TODO handle user being added
 											StaticUserInfo.setFbID(id);
-											System.out.println("new user's fb id: "+id);
+											Log.d("NOTE","new user's fb id: "+id);
 											try {
 												StaticUserInfo.setUserID(rsp.getJSONObject(0).optJSONObject("User").getInt("user_id"));
 											} catch (JSONException e) {
@@ -119,12 +132,17 @@ public class HomeFragment extends Fragment{
 										@Override
 										public void onFailure(Throwable e, String rsp) {
 											//TODO handle error adding user
-											System.err.println(e.getMessage());
+											Log.d("ADD_ERROR", e.getMessage());
 										}
 									});
 								} catch (JSONException e) {
 									// TODO Auto-generated catch block
-									e.printStackTrace();
+									Log.d("ERR", e.getMessage());
+								} catch (UnsupportedEncodingException e) {
+									// TODO Auto-generated catch block
+									Log.d("ERR", e.getMessage());
+								} catch (Exception e) {
+									Log.d("ERR2", e.getMessage());
 								}
 							}
 							else {
