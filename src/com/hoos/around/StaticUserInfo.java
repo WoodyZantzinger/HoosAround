@@ -24,14 +24,9 @@ public class StaticUserInfo {
 		return logged_in;
 	}
 	
-	static Boolean wasError() {
-		return Error;
+	static void isLoggedIn(Boolean status) {
+		logged_in = status;
 	}
-	
-	static void setError(Boolean status) {
-		Error = status;
-	}
-	
 	
 	static void setUserID(int id) {
 		logged_in = true;
@@ -53,6 +48,7 @@ public class StaticUserInfo {
 
 	public static void setFbID(String fb_id) {
 		StaticUserInfo.fb_id = fb_id;
+
 	}
 
 	public static HashSet<String> getFbFriends() {
