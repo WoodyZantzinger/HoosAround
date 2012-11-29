@@ -8,10 +8,13 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 public class Main extends Activity {
+	
+	private HomeFragment ReturnFragment;
 	
 	class MyTabsListener implements ActionBar.TabListener {
 		public Fragment fragment;
@@ -75,13 +78,24 @@ public class Main extends Activity {
 		HomeFragment frag = (HomeFragment)Fragment.instantiate(this, HomeFragment.class.getName());
 		ft.replace(R.id.details, frag);
         
-//		FriendsFragment frag = (FriendsFragment)Fragment.instantiate(this, FriendsFragment.class.getName());
-//		ft.replace(R.id.details, frag);
-		//ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
         ft.commit();
 	}
-	public void promptLogin(View view) {
-		Intent intent = new Intent(this, Login.class);
-		startActivity(intent);
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    super.onActivityResult(requestCode, resultCode, data);
+
+	    if (ReturnFragment != null)       
+	    	ReturnFragment.ActivityResult(requestCode, resultCode, data);
+	}
+	
+	@Override
+	public void onAttachFragment(Fragment fragment) {
+	    super.onAttachFragment(fragment);
+
+	    String fragmentSimpleName = fragment.getClass().getSimpleName();
+
+	    if (fragmentSimpleName.equals("HomeFragment"))
+	        ReturnFragment = (HomeFragment)fragment;        
 	}
 }
