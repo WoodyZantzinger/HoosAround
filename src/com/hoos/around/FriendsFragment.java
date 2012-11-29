@@ -3,6 +3,7 @@ package com.hoos.around;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
@@ -192,6 +193,23 @@ public class FriendsFragment extends Fragment{
 				*/
                 // Do something with the response
 		
+		  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+			Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			double latitude = current.getLatitude();
+			double longitude = current.getLatitude();
+			final PvtJsonArray closeLocations = new PvtJsonArray();
+			RestClient.get("/locations/gps/" + latitude + "/" + longitude, null, null, new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONArray rsp) {
+					closeLocations.setArray(rsp);
+					System.out.println("locations gotten");
+				}
+				@Override
+				public void onFailure(Throwable e, String rsp) {
+					Log.d("JSON", e.getMessage());
+				}
+			});
+			System.out.println(closeLocations.getArray().toString());
 				UserList.clear();
 				Object[] friends = StaticUserInfo.getFbFriends().toArray();
 				for (int i=0; i<friends.length; i++) {
@@ -279,5 +297,21 @@ public class FriendsFragment extends Fragment{
 	public void setText(String item) {
 		TextView view = (TextView) getView().findViewById(R.id.header);
 		view.setText(item);
+	}
+	
+	private class PvtJsonArray {
+		JSONArray array = new JSONArray();
+		public void PvtJsonArray() {
+			
+		}
+		public void PvtJsonArray(JSONArray arr) {
+			array = arr;
+		}
+		public void setArray(JSONArray arr) {
+			array = arr;
+		}
+		public JSONArray getArray() {
+			return array;
+		}
 	}
 }
