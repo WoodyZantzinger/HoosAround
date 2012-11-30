@@ -195,64 +195,68 @@ public class FriendsFragment extends Fragment{
 		
 		  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
 			Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			double latitude = current.getLatitude();
-			double longitude = current.getLatitude();
-			final PvtJsonArray closeLocations = new PvtJsonArray();
+			double latitude = 38;
+			double longitude = -78;
+			if (current != null) {
+			latitude = current.getLatitude();
+			longitude = current.getLatitude();
+			}
+			final JSONObjectWrapper closeLocations = new JSONObjectWrapper();
 			RestClient.get("/locations/gps/" + latitude + "/" + longitude, null, null, new JsonHttpResponseHandler() {
 				@Override
-				public void onSuccess(JSONArray rsp) {
-					closeLocations.setArray(rsp);
-					System.out.println("locations gotten");
+				public void onSuccess(JSONObject rsp) {
+					closeLocations.setJsonObject(rsp);
+					Log.d("REST", rsp.toString());
 				}
 				@Override
 				public void onFailure(Throwable e, String rsp) {
 					Log.d("JSON", e.getMessage());
 				}
 			});
-			System.out.println(closeLocations.getArray().toString());
-				UserList.clear();
-				Object[] friends = StaticUserInfo.getFbFriends().toArray();
-				for (int i=0; i<friends.length; i++) {
-					final String friendFbId = friends[i].toString();
-					RestClient.get("/users/fb_id/" + friendFbId, null, null, new JsonHttpResponseHandler() {
-						@Override
-						public void onSuccess(JSONArray rsp) {
-							User temp = new User();
-							JSONObject JSONUser=null;
-							try {
-								JSONUser = rsp.getJSONObject(0);
-							} catch (JSONException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							try {
-								temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-								temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-								temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+			System.out.println(closeLocations.getJsonObject().toString());
+			UserList.clear();
+			Object[] friends = StaticUserInfo.getFbFriends().toArray();
+			for (int i=0; i<friends.length; i++) {
+				final String friendFbId = friends[i].toString();
+				RestClient.get("/users/fb_id/" + friendFbId, null, null, new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray rsp) {
+						User temp = new User();
+						JSONObject JSONUser=null;
+						try {
+							JSONUser = rsp.getJSONObject(0);
+						} catch (JSONException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						try {
+							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 //							if (UserList.add(temp)) {
 //								System.out.println(temp.user_first + " added");
 //							}
 //							else {
 //								System.out.println(temp.user_first + " not added");
 //							}
-							userAdapter.add(temp);
-							userAdapter.notifyDataSetChanged();
-						}
-						@Override
-						public void onFailure(Throwable e, String rsp) {
-							System.err.println(e.getMessage());
-							Log.d("JSON", rsp);
-							Log.d("JSON", RestClient.getAbsoluteUrl("/users/fb_id/"+friendFbId));
-						}
-					});
-				}
-				//userAdapter.clear();
-				//userAdapter.notifyDataSetChanged();
-            }
+						userAdapter.add(temp);
+						userAdapter.notifyDataSetChanged();
+					}
+					@Override
+					public void onFailure(Throwable e, String rsp) {
+						System.err.println(e.getMessage());
+						Log.d("JSON", rsp);
+						Log.d("JSON", RestClient.getAbsoluteUrl("/users/fb_id/"+friendFbId));
+					}
+				});
+			}
+			//userAdapter.clear();
+			//userAdapter.notifyDataSetChanged();
+        }
             
            /* @Override
             public void onFailure(Throwable e, String response) {
@@ -299,19 +303,20 @@ public class FriendsFragment extends Fragment{
 		view.setText(item);
 	}
 	
-	private class PvtJsonArray {
-		JSONArray array = new JSONArray();
-		public void PvtJsonArray() {
-			
+	private class JSONObjectWrapper {
+		JSONObject json = new JSONObject();
+
+		public void JSONObjectWrapper(JSONObject obj) {
+			json = obj;
 		}
-		public void PvtJsonArray(JSONArray arr) {
-			array = arr;
+		public void setJsonObject(JSONObject obj) {
+			json = obj;
 		}
-		public void setArray(JSONArray arr) {
-			array = arr;
+		public JSONObject getJsonObject() {
+			return json;
 		}
-		public JSONArray getArray() {
-			return array;
+		public String toString() {
+			return json.toString();
 		}
 	}
 }

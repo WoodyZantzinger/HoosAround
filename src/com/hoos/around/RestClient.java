@@ -17,6 +17,7 @@ public class RestClient {
 	  private static AsyncHttpClient client = new AsyncHttpClient();
 
 	  public static void get(String url, RequestParams params, Handler handler, AsyncHttpResponseHandler responseHandler) {
+		  Log.d("REST", "getting url " + url);
 	      client.get(getAbsoluteUrl(url), params, responseHandler);
 	  }
 
