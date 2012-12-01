@@ -27,6 +27,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -42,41 +44,6 @@ public class HomeFragment extends Fragment{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		 if(!StaticUserInfo.isLoggedIn() && !Login_Attempted) {	//If user is not logged in AND NO ERROR, Try to log him in
-			 Login_Attempted = true;
-		        facebook.authorize(this.getActivity(), new DialogListener() {
-		            @Override
-		            public void onComplete(Bundle values) {
-		            	Log.d("FB","Facebook Success!");
-		            	StaticUserInfo.isLoggedIn(true);
-		                mAsyncRunner.request("me", new IdRequestListener());
-		                mAsyncRunner.request("me/friends", new FriendsRequestListener());
-		                
-		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Logged into Facebook Succesfully", Toast.LENGTH_SHORT);
-		                toast.show();
-		            }
-		
-		            @Override
-		            public void onFacebookError(FacebookError error) {
-		            	Log.d("FB","Facebook Facebook Error");
-		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
-		                toast.show();
-		            }
-		
-		            @Override
-		            public void onError(DialogError e) {
-		            	Log.d("FB","Facebook Error");
-		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
-		                toast.show();
-		            }
-		
-		            @Override
-		            public void onCancel() {
-		                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Cancelled", Toast.LENGTH_SHORT);
-		                toast.show();
-		            }
-		        });
-	        }
 	}
 	
 	@Override
@@ -87,6 +54,50 @@ public class HomeFragment extends Fragment{
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.home_fragment, container, false);
+		
+		Button fb_button = (Button)view.findViewById(R.id.facebook_button);
+		fb_button.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				if(!StaticUserInfo.isLoggedIn()) {	//If user is not logged in AND NO ERROR, Try to log him in
+					 Login_Attempted = true;
+				        facebook.authorize(HomeFragment.this.getActivity(), new DialogListener() {
+				            @Override
+				            public void onComplete(Bundle values) {
+				            	Log.d("FB","Facebook Success!");
+				            	StaticUserInfo.isLoggedIn(true);
+				                mAsyncRunner.request("me", new IdRequestListener());
+				                mAsyncRunner.request("me/friends", new FriendsRequestListener());
+				                
+				                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Logged into Facebook Succesfully", Toast.LENGTH_SHORT);
+				                toast.show();
+				            }
+				
+				            @Override
+				            public void onFacebookError(FacebookError error) {
+				            	Log.d("FB","Facebook Facebook Error");
+				                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
+				                toast.show();
+				            }
+				
+				            @Override
+				            public void onError(DialogError e) {
+				            	Log.d("FB","Facebook Error");
+				                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Failed", Toast.LENGTH_SHORT);
+				                toast.show();
+				            }
+				
+				            @Override
+				            public void onCancel() {
+				                Toast toast = Toast.makeText(HomeFragment.this.getActivity(), "Facebook Login Cancelled", Toast.LENGTH_SHORT);
+				                toast.show();
+				            }
+				        });
+				}
+			}
+		});
+		
 		return view;
 	}
 	
