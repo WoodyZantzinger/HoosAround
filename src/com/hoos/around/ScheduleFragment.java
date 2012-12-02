@@ -75,10 +75,10 @@ public class ScheduleFragment extends Fragment {
 
 	private TextView detail_header;
 	private TextView detail_time;
-	private TextView detail_location;
 	private Button new_class;
 	private Button new_location;
 	private ListView ClassListView;
+	private ImageView locationImage;
 	
 	private ProgressDialog dialog;
 
@@ -126,9 +126,8 @@ public class ScheduleFragment extends Fragment {
 		return toReturn;
 	}
 	
-	public void setDetail(Class class_Detail) {
+	public void setDetail(final Class class_Detail) {
 		detail_header.setText(class_Detail.course_mnem);
-		detail_location.setText(String.valueOf(class_Detail.location_id));
 		String end_time = "";
 		String start_time = "";
 		SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
@@ -142,6 +141,23 @@ public class ScheduleFragment extends Fragment {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
+        Bitmap cachedImage = null;
+        try {
+          cachedImage = imageLoader.loadImage("http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, new ImageLoadedListener() {
+        	  public void imageLoaded(Bitmap imageBitmap) {
+        		  locationImage.setImageBitmap(imageBitmap);
+        		  Log.e("IMAGE", "GOOD remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id);             
+          	  }
+          });
+
+        } catch (MalformedURLException e) {
+          Log.e("IMAGE", "Bad remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, e);
+        }
+
+        if( cachedImage != null ) {
+        	locationImage.setImageBitmap(cachedImage);
+        }
 		
 		
 		detail_time.setText(start_time + " till "+ end_time + " On " + formatDay(class_Detail));
@@ -591,8 +607,7 @@ public class ScheduleFragment extends Fragment {
 	
 			detail_header = (TextView) view.findViewById(R.id.scheduleDetailHeader);
 			detail_time = (TextView) view.findViewById(R.id.scheduleDetailTime);
-			detail_location = (TextView) view
-					.findViewById(R.id.scheduleDetailLocation);
+			locationImage = (ImageView) view.findViewById(R.id.location_image);
 	
 			User temp_user = new User();
 			temp_user.user_id = StaticUserInfo.getUserID();

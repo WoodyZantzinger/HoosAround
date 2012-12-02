@@ -77,13 +77,10 @@ android:weightSum="1.0" >
 				android:layout_weight="1.0"
 				android:textSize="30dp"
 			    />
-	       	<TextView 
-			    android:id="@+id/scheduleDetailLocation"
-			    android:layout_width="0.0dip"
-			    android:layout_height="wrap_content"
-				android:layout_weight="1.0"
-				android:textSize="20dp"
-			    />
+	        <ImageView
+	            android:id="@+id/location_image"
+	            android:layout_width="200dip"
+	            android:layout_height="200dip"/>
        	</LinearLayout>
        	<LinearLayout
 	        android:orientation="horizontal"
