@@ -23,6 +23,7 @@ import com.hoos.around.ImageThreadLoader.ImageLoadedListener;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -57,9 +58,11 @@ public class FriendsFragment extends Fragment{
 	private ScheduleAdapter scheduleAdapter;
 	private ListView UserListView;
 	private ListView ClassListView;
+	private ProgressDialog dialog;
 	
 	public void LoadSchedule(User user) {
-		
+		dialog = ProgressDialog.show(this.getActivity(), "", 
+                "Loading Schedule...", true);
 		RestClient.get("schedules/id/" + user.user_id, null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray classes) {
@@ -84,10 +87,12 @@ public class FriendsFragment extends Fragment{
 					scheduleAdapter.clear();
 					scheduleAdapter.addAll(schedule.courses);
 					scheduleAdapter.notifyDataSetChanged();
+					dialog.dismiss();
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					Log.d("JSON", e.getMessage());
+					dialog.dismiss();
 				}
             }
             
@@ -95,6 +100,7 @@ public class FriendsFragment extends Fragment{
             public void onFailure(Throwable e, String response) {
 				Log.d("JSON", response);
 				Log.d("JSON", RestClient.getAbsoluteUrl("courses/view/"));
+				dialog.dismiss();
             }
             
         });	
@@ -230,6 +236,7 @@ public class FriendsFragment extends Fragment{
 					Log.d("JSON", e.getMessage());
 				}
 			});
+
         }
             
            /* @Override
@@ -248,28 +255,34 @@ public class FriendsFragment extends Fragment{
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.friends_fragment, container, false);
 		
-		UserListView = (ListView)view.findViewById(R.id.friendsList);
-		UserListView.setAdapter(userAdapter);
-		UserListView.setOnItemClickListener(new OnItemClickListener() {
-			   @Override
-			   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
-				   User selected = (User)adapter.getItemAtPosition(position);
-				   
-				   LoadSchedule(selected);
-			   } 
-			});
-		
-		ClassListView = (ListView)view.findViewById(R.id.classList);
-		ClassListView.setAdapter(scheduleAdapter);
-		ClassListView.setOnItemClickListener(new OnItemClickListener() {
-			   @Override
-			   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
-
-			   } 
-			});
-		return view;
+		if(StaticUserInfo.isLoggedIn()) {
+			View view = inflater.inflate(R.layout.friends_fragment, container, false);
+			
+			UserListView = (ListView)view.findViewById(R.id.friendsList);
+			UserListView.setAdapter(userAdapter);
+			UserListView.setOnItemClickListener(new OnItemClickListener() {
+				   @Override
+				   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
+					   User selected = (User)adapter.getItemAtPosition(position);
+					   
+					   LoadSchedule(selected);
+				   } 
+				});
+			
+			ClassListView = (ListView)view.findViewById(R.id.classList);
+			ClassListView.setAdapter(scheduleAdapter);
+			ClassListView.setOnItemClickListener(new OnItemClickListener() {
+				   @Override
+				   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
+	
+				   } 
+				});
+			return view;
+		} else {
+			View view = inflater.inflate(R.layout.error_fragment, container, false);
+			return view;
+		}
 	}
 	
 	public void setText(String item) {

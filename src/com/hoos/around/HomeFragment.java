@@ -21,6 +21,7 @@ import com.facebook.android.Facebook.DialogListener;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -39,6 +40,8 @@ public class HomeFragment extends Fragment{
     AsyncFacebookRunner mAsyncRunner = new AsyncFacebookRunner(facebook);
     String fb_id = "";
     Boolean	Login_Attempted = false;
+    
+	private ProgressDialog dialog;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,6 +69,8 @@ public class HomeFragment extends Fragment{
 				            @Override
 				            public void onComplete(Bundle values) {
 				            	Log.d("FB","Facebook Success!");
+				        		dialog = ProgressDialog.show(HomeFragment.this.getActivity(), "", 
+				                        "Loading User Info...", true);
 				            	StaticUserInfo.isLoggedIn(true);
 				                mAsyncRunner.request("me", new IdRequestListener());
 				                mAsyncRunner.request("me/friends", new FriendsRequestListener());
@@ -122,7 +127,10 @@ public class HomeFragment extends Fragment{
 					RestClient.get("/users/fb_id/" + id, null, null, new JsonHttpResponseHandler() {
 						@Override
 						public void onSuccess(JSONArray rsp) {
+							dialog.dismiss();
 							if (rsp.length()==0) {
+				        		dialog = ProgressDialog.show(HomeFragment.this.getActivity(), "", 
+				                        "Adding New User Info...", true);
 								//no content in response json means no user with this fb id exists
 								try {
 									String PATH = "/users/add/"+URLEncoder.encode(json.getString("first_name"),"UTF-8")+"/"+URLEncoder.encode(json.getString("last_name"),"UTF-8")+"/"+id;
@@ -132,6 +140,7 @@ public class HomeFragment extends Fragment{
 										public void onSuccess(JSONArray rsp) {
 											//TODO handle user being added
 											StaticUserInfo.setFbID(id);
+											dialog.dismiss();
 											Log.d("NOTE","new user's fb id: "+id);
 											try {
 												StaticUserInfo.setUserID(rsp.getJSONObject(0).optJSONObject("User").getInt("user_id"));
@@ -144,16 +153,20 @@ public class HomeFragment extends Fragment{
 										public void onFailure(Throwable e, String rsp) {
 											//TODO handle error adding user
 											Log.d("ADD_ERROR", e.getMessage());
+											dialog.dismiss();
 										}
 									});
 								} catch (JSONException e) {
 									// TODO Auto-generated catch block
 									Log.d("ERR", e.getMessage());
+									dialog.dismiss();
 								} catch (UnsupportedEncodingException e) {
 									// TODO Auto-generated catch block
 									Log.d("ERR", e.getMessage());
+									dialog.dismiss();
 								} catch (Exception e) {
 									Log.d("ERR2", e.getMessage());
+									dialog.dismiss();
 								}
 							}
 							else {

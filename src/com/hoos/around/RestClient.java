@@ -43,6 +43,11 @@ public class RestClient {
 				temp.course_end = JSONSchedule.getJSONArray("Course").getJSONObject(0).getString("course_end");
 				temp.course_mnem = JSONSchedule.getJSONArray("Course").getJSONObject(0).getString("course_mnem");
 				temp.location_id = JSONSchedule.getJSONArray("Course").getJSONObject(0).getInt("location_id");
+				temp.monday = JSONSchedule.getJSONArray("Course").getJSONObject(0).getBoolean("course_monday");
+				temp.tuesday = JSONSchedule.getJSONArray("Course").getJSONObject(0).getBoolean("course_tuesday");
+				temp.wednesday = JSONSchedule.getJSONArray("Course").getJSONObject(0).getBoolean("course_wednesday");
+				temp.thursday = JSONSchedule.getJSONArray("Course").getJSONObject(0).getBoolean("course_thursday");
+				temp.friday = JSONSchedule.getJSONArray("Course").getJSONObject(0).getBoolean("course_friday");
 				temp_schedule.courses.add(temp);
 			}
 			

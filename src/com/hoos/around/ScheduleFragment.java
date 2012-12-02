@@ -1,7 +1,12 @@
 package com.hoos.around;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -15,12 +20,7 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,21 +29,28 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class ScheduleFragment extends Fragment {
 
 	private List<Class> ClassList = new ArrayList<Class>();
+	private List<Location> LocationList = new ArrayList<Location>();
 
 	private TextView detail_header;
 	private TextView detail_time;
 	private TextView detail_location;
 	private Button new_class;
 	private ListView ClassListView;
+	
+	private ProgressDialog dialog;
 
 	private ScheduleAdapter scheduleAdapter;
 
@@ -77,11 +84,35 @@ public class ScheduleFragment extends Fragment {
 
 	}
 
+	public String formatDay(Class toFormat) {
+		String toReturn = "";
+		if(toFormat.monday) {toReturn = toReturn + " Monday"; }
+		if(toFormat.tuesday) {toReturn = toReturn + " Tuesday"; }
+		if(toFormat.wednesday) {toReturn = toReturn + " Wednesday"; }
+		if(toFormat.thursday) {toReturn = toReturn + " Thursday"; }
+		if(toFormat.friday) {toReturn = toReturn + " Friday"; }
+		return toReturn;
+	}
+	
 	public void setDetail(Class class_Detail) {
 		detail_header.setText(class_Detail.course_mnem);
 		detail_location.setText(String.valueOf(class_Detail.location_id));
-		detail_time.setText(class_Detail.course_start + " till "
-				+ class_Detail.course_end);
+		String end_time = "";
+		String start_time = "";
+		SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+		try {
+			Date start = formatter.parse(class_Detail.course_start);
+			Date end = formatter.parse(class_Detail.course_end);
+			formatter.applyPattern("hh:mm aa");
+			start_time = formatter.format(start);
+			end_time = formatter.format(end);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		detail_time.setText(start_time + " till "+ end_time + " On " + formatDay(class_Detail));
 	}
 
 	public void LoadClasses() {
@@ -96,16 +127,16 @@ public class ScheduleFragment extends Fragment {
 								Class temp = new Class();
 								JSONObject JSONClasses = (JSONObject) classes
 										.get(x);
-								temp.course_id = JSONClasses.getJSONObject(
-										"Course").getInt("course_id");
-								temp.course_start = JSONClasses.getJSONObject(
-										"Course").getString("course_start");
-								temp.course_end = JSONClasses.getJSONObject(
-										"Course").getString("course_end");
-								temp.course_mnem = JSONClasses.getJSONObject(
-										"Course").getString("course_mnem");
-								temp.location_id = JSONClasses.getJSONObject(
-										"Course").getInt("location_id");
+								temp.course_id = JSONClasses.getJSONObject("Course").getInt("course_id");
+								temp.course_start = JSONClasses.getJSONObject("Course").getString("course_start");
+								temp.course_end = JSONClasses.getJSONObject("Course").getString("course_end");
+								temp.course_mnem = JSONClasses.getJSONObject("Course").getString("course_mnem");
+								temp.location_id = JSONClasses.getJSONObject("Course").getInt("location_id");
+								temp.monday = JSONClasses.getJSONObject("Course").getBoolean("course_monday");
+								temp.tuesday = JSONClasses.getJSONObject("Course").getBoolean("course_tuesday");
+								temp.wednesday = JSONClasses.getJSONObject("Course").getBoolean("course_wednesday");
+								temp.thursday = JSONClasses.getJSONObject("Course").getBoolean("course_thursday");
+								temp.friday = JSONClasses.getJSONObject("Course").getBoolean("course_friday");
 								ClassList.add(temp);
 							}
 
@@ -129,8 +160,45 @@ public class ScheduleFragment extends Fragment {
 
 				});
 	}
+	
+	public void LoadLocations() {
+		RestClient.get("locations/view", null, null,
+				new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray locations) {
+						// Populate Location List
+						try {
+
+							for (int x = 0; x < locations.length(); x++) {
+								Location temp = new Location();
+								JSONObject JSONLocations = (JSONObject) locations.get(x);
+								temp.location_id = JSONLocations.getJSONObject("Location").getInt("location_id");
+								temp.location_name = JSONLocations.getJSONObject("Location").getString("location_name");
+								temp.location_lat = JSONLocations.getJSONObject("Location").getDouble("location_lat");
+								temp.location_long = JSONLocations.getJSONObject("Location").getDouble("location_long");
+								LocationList.add(temp);
+							}
+
+							Log.d("JSON", "LOCATION MSG RECIEVED");
+
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							Log.d("JSON", e.getMessage());
+						}
+					}
+
+					@Override
+					public void onFailure(Throwable e, String response) {
+						Log.d("JSON", response);
+						Log.d("JSON", RestClient.getAbsoluteUrl("locations/view/"));
+					}
+
+				});
+	}
 
 	public void LoadSchedule(User user) {
+		dialog = ProgressDialog.show(this.getActivity(), "", 
+                "Loading Your Schedule...", true);
 		System.out.println("id "+user.user_id);
 		RestClient.get("schedules/id/" + user.user_id, null, null,
 				new JsonHttpResponseHandler() {
@@ -146,10 +214,12 @@ public class ScheduleFragment extends Fragment {
 							scheduleAdapter.addAll(new_schedule.courses);
 							scheduleAdapter.notifyDataSetChanged();
 							Log.d("JSON", "MSG RECIEVED");
+							dialog.dismiss();
 
 						} catch (JSONException e) {
 							// TODO Auto-generated catch block
 							Log.d("JSON", e.getMessage());
+							dialog.dismiss();
 						}
 					}
 
@@ -158,6 +228,7 @@ public class ScheduleFragment extends Fragment {
 						Log.d("JSON", response);
 						Log.d("JSON",
 								RestClient.getAbsoluteUrl("courses/view/"));
+						dialog.dismiss();
 					}
 
 				});
@@ -168,6 +239,10 @@ public class ScheduleFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		scheduleAdapter = new ScheduleAdapter(getActivity(),
 				R.layout.friends_fragment_schedulelist);
+		
+		
+        Toast toast = Toast.makeText(this.getActivity(), "User ID = " + StaticUserInfo.getUserID(), Toast.LENGTH_SHORT);
+        toast.show();
 
 	}
 
@@ -177,116 +252,170 @@ public class ScheduleFragment extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.schedule_fragment, container,
-				false);
-
-		ClassListView = (ListView) view.findViewById(R.id.scheduleList);
-		ClassListView.setAdapter(scheduleAdapter);
-		ClassListView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> adapter, View view,
-					int position, long arg) {
-				setDetail((Class) adapter.getItemAtPosition(position));
-				adapter.setSelection(position);
-			}
-		});
-
-		new_class = (Button) view.findViewById(R.id.scheduleListAdd);
-		new_class.setClickable(false);
-		LoadClasses();
-		new_class.setOnClickListener(new OnClickListener() {
-
-			@Override
-			public void onClick(View arg0) {
-
-				//
-				// SET UP THE DIALOG THAT WILL POPUP WHEN THE ADD BUTTON IS
-				// CLICKED
-				//
-
-				final Dialog addDialog = new Dialog(arg0.getContext(),
-						R.style.CustomDialogTheme);
-				addDialog.setContentView(R.layout.add_class_dialog);
-
-				final Spinner class_spinner = (Spinner) addDialog
-						.findViewById(R.id.class_spinner);
-				ArrayAdapter<Class> dataAdapter = new ArrayAdapter<Class>(arg0
-						.getContext(), android.R.layout.simple_spinner_item,
-						ClassList);
-				dataAdapter
-						.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				class_spinner.setAdapter(dataAdapter);
-
-				addDialog.show();
-
-				//
-				// SET UP THE BUTTON WITHIN THE DIALOG
-				//
-
-				Button close_btn = (Button) addDialog
-						.findViewById(R.id.submit_button);
-				close_btn.setOnClickListener(new View.OnClickListener() {
-					public void onClick(View v) {
-
-						RestClient.get(
-								"schedules/add/"
-										+ StaticUserInfo.getUserID()
-										+ "/"
-										+ ((Class) class_spinner
-												.getSelectedItem()).course_id,
-								null, null, new JsonHttpResponseHandler() {
-									@Override
-									public void onSuccess(JSONArray classes) {
-										// Grab A Schedule
-										try {
-											Schedule new_schedule = RestClient
-													.parse_schedule(classes);
-											scheduleAdapter.clear();
-											scheduleAdapter
-													.addAll(new_schedule.courses);
-											scheduleAdapter
-													.notifyDataSetChanged();
-											addDialog.dismiss();
-											Log.d("JSON", "MSG RECIEVED");
-
-										} catch (JSONException e) {
-											// TODO Auto-generated catch block
-											Log.d("JSON", e.getMessage());
-											addDialog.dismiss();
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		if(StaticUserInfo.isLoggedIn()) {
+			View view = inflater.inflate(R.layout.schedule_fragment, container,
+					false);
+	
+			ClassListView = (ListView) view.findViewById(R.id.scheduleList);
+			ClassListView.setAdapter(scheduleAdapter);
+			ClassListView.setOnItemClickListener(new OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> adapter, View view,
+						int position, long arg) {
+					setDetail((Class) adapter.getItemAtPosition(position));
+					adapter.setSelection(position);
+				}
+			});
+	
+			new_class = (Button) view.findViewById(R.id.scheduleListAdd);
+			new_class.setClickable(false);
+			LoadClasses();
+			LoadLocations();
+			new_class.setOnClickListener(new OnClickListener() {
+	
+				@Override
+				public void onClick(View arg0) {
+	
+					//
+					// SET UP THE DIALOG THAT WILL POPUP WHEN THE ADD BUTTON IS
+					// CLICKED
+					//
+	
+					final Dialog addDialog = new Dialog(arg0.getContext(),
+							R.style.CustomDialogTheme);
+					addDialog.setContentView(R.layout.add_class_dialog);
+	
+					final Spinner class_spinner = (Spinner) addDialog.findViewById(R.id.class_spinner);
+					ArrayAdapter<Class> dataAdapter = new ArrayAdapter<Class>(arg0.getContext(), android.R.layout.simple_spinner_item, ClassList);
+					dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+					class_spinner.setAdapter(dataAdapter);
+					
+					final Spinner location_spinner = (Spinner)addDialog.findViewById(R.id.location_spinner);
+					ArrayAdapter<Location> dataAdapter2 = new ArrayAdapter<Location>(arg0.getContext(), android.R.layout.simple_spinner_item, LocationList);
+					dataAdapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+					location_spinner.setAdapter(dataAdapter2);
+					
+					addDialog.show();
+	
+					//
+					// SET UP THE BUTTON WITHIN THE DIALOG
+					//
+	
+					Button close_btn = (Button) addDialog
+							.findViewById(R.id.submit_button);
+					close_btn.setOnClickListener(new View.OnClickListener() {
+						public void onClick(View v) {
+							addDialog.dismiss();
+							dialog = ProgressDialog.show(ScheduleFragment.this.getActivity(), "", 
+					                "Adding Class...", true);
+							RestClient.get(
+									"schedules/add/"+ StaticUserInfo.getUserID() + "/" + ((Class) class_spinner.getSelectedItem()).course_id, null, null, new JsonHttpResponseHandler() {
+										@Override
+										public void onSuccess(JSONArray classes) {
+											// Grab A Schedule
+											try {
+												Schedule new_schedule = RestClient.parse_schedule(classes);
+												scheduleAdapter.clear();
+												scheduleAdapter.addAll(new_schedule.courses);
+												scheduleAdapter.notifyDataSetChanged();
+												Log.d("JSON", "MSG RECIEVED");
+												dialog.dismiss();
+	
+											} catch (JSONException e) {
+												// TODO Auto-generated catch block
+												Log.d("JSON", e.getMessage());
+												dialog.dismiss();
+											}
 										}
-									}
-
-									@Override
-									public void onFailure(Throwable e,
-											String response) {
-										Log.d("JSON", response);
-										Log.d("JSON",
-												RestClient
-														.getAbsoluteUrl("courses/view/"));
-									}
-
-								});
-
-					}
-				});
-
-			}
-		});
-
-		detail_header = (TextView) view.findViewById(R.id.scheduleDetailHeader);
-		detail_time = (TextView) view.findViewById(R.id.scheduleDetailTime);
-		detail_location = (TextView) view
-				.findViewById(R.id.scheduleDetailLocation);
-
-		User temp_user = new User();
-		temp_user.user_id = StaticUserInfo.getUserID();
-
-		LoadSchedule(temp_user);
-		System.out.println(scheduleAdapter.getCount());
-		for (int i=0; i<scheduleAdapter.getCount(); i++) System.out.println(scheduleAdapter.getItem(i));
-		return view;
+	
+										@Override
+										public void onFailure(Throwable e,
+												String response) {
+											Log.d("JSON", response);
+											Log.d("JSON",RestClient.getAbsoluteUrl("courses/view/"));
+											dialog.dismiss();
+										}
+	
+									});
+	
+						}
+					});
+					
+					// ADD A NEW CLASS, AND ADD TO SCHEDULE
+					Button close_btn2 = (Button) addDialog.findViewById(R.id.submit_button2);
+					close_btn2.setOnClickListener(new View.OnClickListener() {
+						public void onClick(View v) {
+							//POPULATE WITH ALL THE DATA
+							String mnem = ((EditText)addDialog.findViewById(R.id.class_name)).getText().toString();
+							int locationid = ((Location)location_spinner.getSelectedItem()).location_id;
+							TimePicker startTimePicker = (TimePicker)addDialog.findViewById(R.id.start_time);
+							TimePicker endTimePicker = (TimePicker)addDialog.findViewById(R.id.end_time);
+							String start = startTimePicker.getCurrentHour() + ":" + startTimePicker.getCurrentMinute() + ":00";
+							String end = endTimePicker.getCurrentHour() + ":" + endTimePicker.getCurrentMinute() + ":00";
+							String URL = "";
+							try {
+								URL = "courses/add/" + URLEncoder.encode(mnem, "UTF8") + "/" + locationid + "/" + URLEncoder.encode(start, "UTF8") + "/" + URLEncoder.encode(end, "UTF8");
+								URL = URL + "/" + ((CheckBox)addDialog.findViewById(R.id.monday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.tuesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.wednesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.thursday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.friday)).isChecked();
+								URL = URL + "/" + StaticUserInfo.getUserID();
+								Log.d("ADD", URL);
+							} catch (UnsupportedEncodingException e1) {
+								e1.printStackTrace();
+							}
+							addDialog.dismiss();
+							dialog = ProgressDialog.show(ScheduleFragment.this.getActivity(), "", 
+					                "Adding Class...", true);
+							RestClient.get(
+									URL, null, null, new JsonHttpResponseHandler() {
+										@Override
+										public void onSuccess(JSONArray classes) {
+											// Grab A Schedule
+											try {
+												Schedule new_schedule = RestClient.parse_schedule(classes);
+												scheduleAdapter.clear();
+												scheduleAdapter.addAll(new_schedule.courses);
+												scheduleAdapter.notifyDataSetChanged();
+												dialog.dismiss();
+												Log.d("JSON", "MSG RECIEVED");
+	
+											} catch (JSONException e) {
+												// TODO Auto-generated catch block
+												Log.d("JSON", e.getMessage());
+												dialog.dismiss();
+											}
+										}
+	
+										@Override
+										public void onFailure(Throwable e,
+												String response) {
+											Log.d("JSON", response);
+											dialog.dismiss();
+										}
+	
+									});
+	
+						}
+					});
+	
+				}
+			});
+	
+			detail_header = (TextView) view.findViewById(R.id.scheduleDetailHeader);
+			detail_time = (TextView) view.findViewById(R.id.scheduleDetailTime);
+			detail_location = (TextView) view
+					.findViewById(R.id.scheduleDetailLocation);
+	
+			User temp_user = new User();
+			temp_user.user_id = StaticUserInfo.getUserID();
+	
+			LoadSchedule(temp_user);
+			System.out.println(scheduleAdapter.getCount());
+			for (int i=0; i<scheduleAdapter.getCount(); i++) System.out.println(scheduleAdapter.getItem(i));
+			return view;
+		} else {
+			View view = inflater.inflate(R.layout.error_fragment, container, false);
+			return view;
+		}
 	}
 
 	public void setText(String item) {

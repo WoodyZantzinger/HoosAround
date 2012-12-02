@@ -7,6 +7,12 @@ public class Class {
 	public String course_start;
 	public String course_end;
 	
+	public Boolean monday;
+	public Boolean tuesday;
+	public Boolean wednesday;
+	public Boolean thursday;
+	public Boolean friday;
+	
     @Override
     public String toString() {
         return course_mnem + " @ " + course_start;
