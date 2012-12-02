@@ -14,5 +14,11 @@
         android:text="Welcome to HoosAround, the best app for finding friends near you! Click the Friends tab to see where your friends are."
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textSize="30sp" />
+    <Button 
+        android:id="@+id/facebook_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log In With Facebook!"
+        />"
 	
 </LinearLayout>
