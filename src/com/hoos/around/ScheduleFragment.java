@@ -3,7 +3,10 @@ package com.hoos.around;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -81,11 +84,35 @@ public class ScheduleFragment extends Fragment {
 
 	}
 
+	public String formatDay(Class toFormat) {
+		String toReturn = "";
+		if(toFormat.monday) {toReturn = toReturn + " Monday"; }
+		if(toFormat.tuesday) {toReturn = toReturn + " Tuesday"; }
+		if(toFormat.wednesday) {toReturn = toReturn + " Wednesday"; }
+		if(toFormat.thursday) {toReturn = toReturn + " Thursday"; }
+		if(toFormat.friday) {toReturn = toReturn + " Friday"; }
+		return toReturn;
+	}
+	
 	public void setDetail(Class class_Detail) {
 		detail_header.setText(class_Detail.course_mnem);
 		detail_location.setText(String.valueOf(class_Detail.location_id));
-		detail_time.setText(class_Detail.course_start + " till "
-				+ class_Detail.course_end);
+		String end_time = "";
+		String start_time = "";
+		SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+		try {
+			Date start = formatter.parse(class_Detail.course_start);
+			Date end = formatter.parse(class_Detail.course_end);
+			formatter.applyPattern("hh:mm aa");
+			start_time = formatter.format(start);
+			end_time = formatter.format(end);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		detail_time.setText(start_time + " till "+ end_time + " On " + formatDay(class_Detail));
 	}
 
 	public void LoadClasses() {
@@ -100,16 +127,16 @@ public class ScheduleFragment extends Fragment {
 								Class temp = new Class();
 								JSONObject JSONClasses = (JSONObject) classes
 										.get(x);
-								temp.course_id = JSONClasses.getJSONObject(
-										"Course").getInt("course_id");
-								temp.course_start = JSONClasses.getJSONObject(
-										"Course").getString("course_start");
-								temp.course_end = JSONClasses.getJSONObject(
-										"Course").getString("course_end");
-								temp.course_mnem = JSONClasses.getJSONObject(
-										"Course").getString("course_mnem");
-								temp.location_id = JSONClasses.getJSONObject(
-										"Course").getInt("location_id");
+								temp.course_id = JSONClasses.getJSONObject("Course").getInt("course_id");
+								temp.course_start = JSONClasses.getJSONObject("Course").getString("course_start");
+								temp.course_end = JSONClasses.getJSONObject("Course").getString("course_end");
+								temp.course_mnem = JSONClasses.getJSONObject("Course").getString("course_mnem");
+								temp.location_id = JSONClasses.getJSONObject("Course").getInt("location_id");
+								temp.monday = JSONClasses.getJSONObject("Course").getBoolean("course_monday");
+								temp.tuesday = JSONClasses.getJSONObject("Course").getBoolean("course_tuesday");
+								temp.wednesday = JSONClasses.getJSONObject("Course").getBoolean("course_wednesday");
+								temp.thursday = JSONClasses.getJSONObject("Course").getBoolean("course_thursday");
+								temp.friday = JSONClasses.getJSONObject("Course").getBoolean("course_friday");
 								ClassList.add(temp);
 							}
 

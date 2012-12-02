@@ -53,6 +53,7 @@ android:weightSum="1.0" >
 		    style="@style/sectionHeader"
 		    android:layout_toRightOf="@id/shadow"
 		    android:layout_alignParentTop="true"
+		    android:textSize="40dp"
 		    />
 	    <LinearLayout
 	        android:orientation="horizontal"
@@ -68,7 +69,7 @@ android:weightSum="1.0" >
 			    android:layout_width="0.0dip"
 			    android:layout_height="wrap_content"
 				android:layout_weight="1.0"
-				android:textSize="20dp"
+				android:textSize="30dp"
 			    />
 	       	<TextView 
 			    android:id="@+id/scheduleDetailLocation"

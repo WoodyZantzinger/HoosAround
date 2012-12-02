@@ -6,24 +6,9 @@
     android:padding="10dip"
     android:background="?android:attr/activatedBackgroundIndicator"> >
  
-    <!--  ListRow Left sied Thumbnail image -->
-    <LinearLayout android:id="@+id/thumbnail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="3dip"
-        android:layout_alignParentLeft="true"
-        android:layout_marginRight="5dip">
- 
-        <ImageView
-            android:id="@+id/list_image"
-            android:layout_width="100dip"
-            android:layout_height="100dip"/>
-    </LinearLayout>
- 
-    <!-- Users Name-->
     <TextView
         android:id="@+id/name"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/thumbnail"
         android:layout_toRightOf="@+id/thumbnail"
