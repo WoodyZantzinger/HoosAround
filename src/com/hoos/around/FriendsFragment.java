@@ -23,6 +23,7 @@ import com.hoos.around.ImageThreadLoader.ImageLoadedListener;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -57,9 +58,11 @@ public class FriendsFragment extends Fragment{
 	private ScheduleAdapter scheduleAdapter;
 	private ListView UserListView;
 	private ListView ClassListView;
+	private ProgressDialog dialog;
 	
 	public void LoadSchedule(User user) {
-		
+		dialog = ProgressDialog.show(this.getActivity(), "", 
+                "Loading Schedule...", true);
 		RestClient.get("schedules/id/" + user.user_id, null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray classes) {
@@ -84,10 +87,12 @@ public class FriendsFragment extends Fragment{
 					scheduleAdapter.clear();
 					scheduleAdapter.addAll(schedule.courses);
 					scheduleAdapter.notifyDataSetChanged();
+					dialog.dismiss();
 					
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					Log.d("JSON", e.getMessage());
+					dialog.dismiss();
 				}
             }
             
@@ -95,6 +100,7 @@ public class FriendsFragment extends Fragment{
             public void onFailure(Throwable e, String response) {
 				Log.d("JSON", response);
 				Log.d("JSON", RestClient.getAbsoluteUrl("courses/view/"));
+				dialog.dismiss();
             }
             
         });	
@@ -176,96 +182,104 @@ public class FriendsFragment extends Fragment{
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
-		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);
-		
-        /*RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(JSONArray users) {
-                // Grab Users
-            	UserList.clear();
-				try {
-					for(int x = 0; x < users.length(); x++) {
-						User temp = new User();
-						JSONObject JSONUser = (JSONObject)users.get(x);
-						temp.user_id = JSONUser.getJSONObject("User").getInt("user_id");
-						temp.user_first = JSONUser.getJSONObject("User").getString("user_first");
-						temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-						//temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
-						UserList.add(temp);
-					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
-					Log.d("JSON", e.getMessage());
-				}
-				*/
-                // Do something with the response
-		
-		  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-			Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			double latitude = 38;
-			double longitude = -78;
-			if (current != null) {
-			latitude = current.getLatitude();
-			longitude = current.getLatitude();
-			}
-			UserList.clear();
-			Object[] friends = StaticUserInfo.getFbFriends().toArray();
-			String friendStr = "";
-			for (int i=0; i<friends.length; i++) {
-				friendStr += friends[i] + "/";
-			}
-			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(JSONObject rspObj) {
-						final User temp = new User();
-						JSONArray users = rspObj.names();
-						final JSONObject rspObjCpy = rspObj;
-						for (int i=0; i<users.length(); i++) {
-							try {
-								final String fb_id = users.getString(i);
-								RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
-									@Override
-									public void onSuccess(JSONArray rspArr) {
-										try {
-											JSONObject JSONUser = rspArr.getJSONObject(0);
-											temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-											temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-											temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-											temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
-										} catch (JSONException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										userAdapter.add(temp);
-										userAdapter.notifyDataSetChanged();
-									}
-								});
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+		if(StaticUserInfo.isLoggedIn()) {
+			
+			userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
+			scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);
+			
+	        /*RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
+	            @Override
+	            public void onSuccess(JSONArray users) {
+	                // Grab Users
+	            	UserList.clear();
+					try {
+						for(int x = 0; x < users.length(); x++) {
+							User temp = new User();
+							JSONObject JSONUser = (JSONObject)users.get(x);
+							temp.user_id = JSONUser.getJSONObject("User").getInt("user_id");
+							temp.user_first = JSONUser.getJSONObject("User").getString("user_first");
+							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+							//temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
+							UserList.add(temp);
 						}
-						//JSONUser = rsp.getJSONObject(0);
-						Log.d("JSON", rspObj.toString());
-//						try {
-//							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-//							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-//							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-//						} catch (JSONException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						userAdapter.add(temp);
-//						userAdapter.notifyDataSetChanged();
-					}
-					@Override
-					public void onFailure(Throwable e, String rsp) {
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
 						Log.d("JSON", e.getMessage());
 					}
-				});
-			//userAdapter.clear();
-			//userAdapter.notifyDataSetChanged();
+					*/
+	                // Do something with the response
+			
+			  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+				Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				double latitude = 38;
+				double longitude = -78;
+				if (current != null) {
+				latitude = current.getLatitude();
+				longitude = current.getLatitude();
+				}
+				UserList.clear();
+				Object[] friends = StaticUserInfo.getFbFriends().toArray();
+				String friendStr = "";
+				for (int i=0; i<friends.length; i++) {
+					friendStr += friends[i] + "/";
+				}
+				dialog = ProgressDialog.show(this.getActivity(), "", 
+		                "Loading Friends...", true);
+				RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
+						@Override
+						public void onSuccess(JSONObject rspObj) {
+							final User temp = new User();
+							JSONArray users = rspObj.names();
+							final JSONObject rspObjCpy = rspObj;
+							for (int i=0; i<users.length(); i++) {
+								try {
+									final String fb_id = users.getString(i);
+									RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
+										@Override
+										public void onSuccess(JSONArray rspArr) {
+											try {
+												JSONObject JSONUser = rspArr.getJSONObject(0);
+												temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+												temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+												temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+												temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
+											} catch (JSONException e) {
+												// TODO Auto-generated catch block
+												e.printStackTrace();
+											}
+											userAdapter.add(temp);
+											userAdapter.notifyDataSetChanged();
+											dialog.dismiss();
+										}
+									});
+								} catch (JSONException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+									dialog.dismiss();
+								}
+							}
+							//JSONUser = rsp.getJSONObject(0);
+							Log.d("JSON", rspObj.toString());
+	//						try {
+	//							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+	//							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+	//							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+	//						} catch (JSONException e) {
+	//							// TODO Auto-generated catch block
+	//							e.printStackTrace();
+	//						}
+	//						userAdapter.add(temp);
+	//						userAdapter.notifyDataSetChanged();
+						}
+						@Override
+						public void onFailure(Throwable e, String rsp) {
+							Log.d("JSON", e.getMessage());
+							dialog.dismiss();
+						}
+					});
+				//userAdapter.clear();
+				//userAdapter.notifyDataSetChanged();
+		}
         }
             
            /* @Override
@@ -284,28 +298,34 @@ public class FriendsFragment extends Fragment{
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.friends_fragment, container, false);
 		
-		UserListView = (ListView)view.findViewById(R.id.friendsList);
-		UserListView.setAdapter(userAdapter);
-		UserListView.setOnItemClickListener(new OnItemClickListener() {
-			   @Override
-			   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
-				   User selected = (User)adapter.getItemAtPosition(position);
-				   
-				   LoadSchedule(selected);
-			   } 
-			});
-		
-		ClassListView = (ListView)view.findViewById(R.id.classList);
-		ClassListView.setAdapter(scheduleAdapter);
-		ClassListView.setOnItemClickListener(new OnItemClickListener() {
-			   @Override
-			   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
-
-			   } 
-			});
-		return view;
+		if(StaticUserInfo.isLoggedIn()) {
+			View view = inflater.inflate(R.layout.friends_fragment, container, false);
+			
+			UserListView = (ListView)view.findViewById(R.id.friendsList);
+			UserListView.setAdapter(userAdapter);
+			UserListView.setOnItemClickListener(new OnItemClickListener() {
+				   @Override
+				   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
+					   User selected = (User)adapter.getItemAtPosition(position);
+					   
+					   LoadSchedule(selected);
+				   } 
+				});
+			
+			ClassListView = (ListView)view.findViewById(R.id.classList);
+			ClassListView.setAdapter(scheduleAdapter);
+			ClassListView.setOnItemClickListener(new OnItemClickListener() {
+				   @Override
+				   public void onItemClick(AdapterView<?> adapter, View view, int position, long arg) {
+	
+				   } 
+				});
+			return view;
+		} else {
+			View view = inflater.inflate(R.layout.error_fragment, container, false);
+			return view;
+		}
 	}
 	
 	public void setText(String item) {
