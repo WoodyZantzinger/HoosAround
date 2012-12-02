@@ -118,7 +118,7 @@ public class FriendsFragment extends Fragment{
     	    	convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.friends_fragment_userlist, parent, false);
     	    }
 	    	TextView label = (TextView)convertView.findViewById(R.id.name);
-    	    label.setText(tempUser.user_first + " " + tempUser.user_last);
+    	    label.setText(tempUser.user_first + " " + tempUser.user_last + " - " + tempUser.distance + " mi away");
     	    Log.d("VIEW", tempUser.user_first + " " + tempUser.user_last);
     	    return (convertView);
 	    }
@@ -217,20 +217,22 @@ public class FriendsFragment extends Fragment{
 			}
 			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
 					@Override
-					public void onSuccess(JSONObject rsp) {
+					public void onSuccess(JSONObject rspObj) {
 						final User temp = new User();
-						JSONArray users = rsp.names();
+						JSONArray users = rspObj.names();
+						final JSONObject rspObjCpy = rspObj;
 						for (int i=0; i<users.length(); i++) {
 							try {
-								String fb_id = users.getString(i);
+								final String fb_id = users.getString(i);
 								RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
 									@Override
-									public void onSuccess(JSONArray rsp) {
+									public void onSuccess(JSONArray rspArr) {
 										try {
-											JSONObject JSONUser = rsp.getJSONObject(0);
+											JSONObject JSONUser = rspArr.getJSONObject(0);
 											temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
 											temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
 											temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+											temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
 										} catch (JSONException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
@@ -245,7 +247,7 @@ public class FriendsFragment extends Fragment{
 							}
 						}
 						//JSONUser = rsp.getJSONObject(0);
-						Log.d("JSON", rsp.toString());
+						Log.d("JSON", rspObj.toString());
 //						try {
 //							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
 //							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
