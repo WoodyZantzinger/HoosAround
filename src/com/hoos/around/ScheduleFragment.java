@@ -1,6 +1,8 @@
 package com.hoos.around;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,14 +15,8 @@ import com.loopj.android.http.JsonHttpResponseHandler;
 
 import android.app.Dialog;
 import android.app.Fragment;
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,15 +25,20 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class ScheduleFragment extends Fragment {
 
 	private List<Class> ClassList = new ArrayList<Class>();
+	private List<Location> LocationList = new ArrayList<Location>();
 
 	private TextView detail_header;
 	private TextView detail_time;
@@ -129,6 +130,41 @@ public class ScheduleFragment extends Fragment {
 
 				});
 	}
+	
+	public void LoadLocations() {
+		RestClient.get("locations/view", null, null,
+				new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray locations) {
+						// Populate Location List
+						try {
+
+							for (int x = 0; x < locations.length(); x++) {
+								Location temp = new Location();
+								JSONObject JSONLocations = (JSONObject) locations.get(x);
+								temp.location_id = JSONLocations.getJSONObject("Location").getInt("location_id");
+								temp.location_name = JSONLocations.getJSONObject("Location").getString("location_name");
+								temp.location_lat = JSONLocations.getJSONObject("Location").getDouble("location_lat");
+								temp.location_long = JSONLocations.getJSONObject("Location").getDouble("location_long");
+								LocationList.add(temp);
+							}
+
+							Log.d("JSON", "LOCATION MSG RECIEVED");
+
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							Log.d("JSON", e.getMessage());
+						}
+					}
+
+					@Override
+					public void onFailure(Throwable e, String response) {
+						Log.d("JSON", response);
+						Log.d("JSON", RestClient.getAbsoluteUrl("locations/view/"));
+					}
+
+				});
+	}
 
 	public void LoadSchedule(User user) {
 		System.out.println("id "+user.user_id);
@@ -168,6 +204,10 @@ public class ScheduleFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		scheduleAdapter = new ScheduleAdapter(getActivity(),
 				R.layout.friends_fragment_schedulelist);
+		
+		
+        Toast toast = Toast.makeText(this.getActivity(), "User ID = " + StaticUserInfo.getUserID(), Toast.LENGTH_SHORT);
+        toast.show();
 
 	}
 
@@ -196,6 +236,7 @@ public class ScheduleFragment extends Fragment {
 		new_class = (Button) view.findViewById(R.id.scheduleListAdd);
 		new_class.setClickable(false);
 		LoadClasses();
+		LoadLocations();
 		new_class.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -210,15 +251,16 @@ public class ScheduleFragment extends Fragment {
 						R.style.CustomDialogTheme);
 				addDialog.setContentView(R.layout.add_class_dialog);
 
-				final Spinner class_spinner = (Spinner) addDialog
-						.findViewById(R.id.class_spinner);
-				ArrayAdapter<Class> dataAdapter = new ArrayAdapter<Class>(arg0
-						.getContext(), android.R.layout.simple_spinner_item,
-						ClassList);
-				dataAdapter
-						.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				final Spinner class_spinner = (Spinner) addDialog.findViewById(R.id.class_spinner);
+				ArrayAdapter<Class> dataAdapter = new ArrayAdapter<Class>(arg0.getContext(), android.R.layout.simple_spinner_item, ClassList);
+				dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 				class_spinner.setAdapter(dataAdapter);
-
+				
+				final Spinner location_spinner = (Spinner)addDialog.findViewById(R.id.location_spinner);
+				ArrayAdapter<Location> dataAdapter2 = new ArrayAdapter<Location>(arg0.getContext(), android.R.layout.simple_spinner_item, LocationList);
+				dataAdapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+				location_spinner.setAdapter(dataAdapter2);
+				
 				addDialog.show();
 
 				//
@@ -231,23 +273,15 @@ public class ScheduleFragment extends Fragment {
 					public void onClick(View v) {
 
 						RestClient.get(
-								"schedules/add/"
-										+ StaticUserInfo.getUserID()
-										+ "/"
-										+ ((Class) class_spinner
-												.getSelectedItem()).course_id,
-								null, null, new JsonHttpResponseHandler() {
+								"schedules/add/"+ StaticUserInfo.getUserID() + "/" + ((Class) class_spinner.getSelectedItem()).course_id, null, null, new JsonHttpResponseHandler() {
 									@Override
 									public void onSuccess(JSONArray classes) {
 										// Grab A Schedule
 										try {
-											Schedule new_schedule = RestClient
-													.parse_schedule(classes);
+											Schedule new_schedule = RestClient.parse_schedule(classes);
 											scheduleAdapter.clear();
-											scheduleAdapter
-													.addAll(new_schedule.courses);
-											scheduleAdapter
-													.notifyDataSetChanged();
+											scheduleAdapter.addAll(new_schedule.courses);
+											scheduleAdapter.notifyDataSetChanged();
 											addDialog.dismiss();
 											Log.d("JSON", "MSG RECIEVED");
 
@@ -262,9 +296,58 @@ public class ScheduleFragment extends Fragment {
 									public void onFailure(Throwable e,
 											String response) {
 										Log.d("JSON", response);
-										Log.d("JSON",
-												RestClient
-														.getAbsoluteUrl("courses/view/"));
+										Log.d("JSON",RestClient.getAbsoluteUrl("courses/view/"));
+									}
+
+								});
+
+					}
+				});
+				
+				// ADD A NEW CLASS, AND ADD TO SCHEDULE
+				Button close_btn2 = (Button) addDialog.findViewById(R.id.submit_button2);
+				close_btn2.setOnClickListener(new View.OnClickListener() {
+					public void onClick(View v) {
+						//POPULATE WITH ALL THE DATA
+						String mnem = ((EditText)addDialog.findViewById(R.id.class_name)).getText().toString();
+						int locationid = ((Location)location_spinner.getSelectedItem()).location_id;
+						TimePicker startTimePicker = (TimePicker)addDialog.findViewById(R.id.start_time);
+						TimePicker endTimePicker = (TimePicker)addDialog.findViewById(R.id.end_time);
+						String start = startTimePicker.getCurrentHour() + ":" + startTimePicker.getCurrentMinute() + ":00";
+						String end = endTimePicker.getCurrentHour() + ":" + endTimePicker.getCurrentMinute() + ":00";
+						String URL = "";
+						try {
+							URL = "courses/add/" + URLEncoder.encode(mnem, "UTF8") + "/" + locationid + "/" + URLEncoder.encode(start, "UTF8") + "/" + URLEncoder.encode(end, "UTF8");
+							URL = URL + "/" + ((CheckBox)addDialog.findViewById(R.id.monday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.tuesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.wednesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.thursday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.friday)).isChecked();
+							URL = URL + "/" + StaticUserInfo.getUserID();
+							Log.d("ADD", URL);
+						} catch (UnsupportedEncodingException e1) {
+							e1.printStackTrace();
+						}
+						RestClient.get(
+								URL, null, null, new JsonHttpResponseHandler() {
+									@Override
+									public void onSuccess(JSONArray classes) {
+										// Grab A Schedule
+										try {
+											Schedule new_schedule = RestClient.parse_schedule(classes);
+											scheduleAdapter.clear();
+											scheduleAdapter.addAll(new_schedule.courses);
+											scheduleAdapter.notifyDataSetChanged();
+											addDialog.dismiss();
+											Log.d("JSON", "MSG RECIEVED");
+
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											Log.d("JSON", e.getMessage());
+											addDialog.dismiss();
+										}
+									}
+
+									@Override
+									public void onFailure(Throwable e,
+											String response) {
+										Log.d("JSON", response);
 									}
 
 								});
