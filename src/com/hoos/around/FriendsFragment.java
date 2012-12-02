@@ -214,9 +214,10 @@ public class FriendsFragment extends Fragment{
 				double latitude = 38;
 				double longitude = -78;
 				if (current != null) {
-				latitude = current.getLatitude();
-				longitude = current.getLatitude();
+					latitude = current.getLatitude();
+					longitude = current.getLongitude();
 				}
+				
 				UserList.clear();
 				Object[] friends = StaticUserInfo.getFbFriends().toArray();
 				String friendStr = "";
