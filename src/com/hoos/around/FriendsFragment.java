@@ -177,95 +177,59 @@ public class FriendsFragment extends Fragment{
 		super.onCreate(savedInstanceState);
 		
 		userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
-		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);
-		
-        /*RestClient.get("users/view/", null, null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(JSONArray users) {
-                // Grab Users
-            	UserList.clear();
-				try {
-					for(int x = 0; x < users.length(); x++) {
-						User temp = new User();
-						JSONObject JSONUser = (JSONObject)users.get(x);
-						temp.user_id = JSONUser.getJSONObject("User").getInt("user_id");
-						temp.user_first = JSONUser.getJSONObject("User").getString("user_first");
-						temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-						//temp.schedule_id = JSONUser.getJSONObject("User").getInt("schedule_id");
-						UserList.add(temp);
+		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);		
+	  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+		Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		double latitude = 38;
+		double longitude = -78;
+		if (current != null) {
+		latitude = current.getLatitude();
+		longitude = current.getLatitude();
+		}
+		UserList.clear();
+		Object[] friends = StaticUserInfo.getFbFriends().toArray();
+		String friendStr = "";
+		for (int i=0; i<friends.length; i++) {
+			friendStr += friends[i] + "/";
+		}
+		RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
+				@Override
+				public void onSuccess(JSONObject rspObj) {
+					final User temp = new User();
+					JSONArray users = rspObj.names();
+					final JSONObject rspObjCpy = rspObj;
+					for (int i=0; i<users.length(); i++) {
+						try {
+							final String fb_id = users.getString(i);
+							RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
+								@Override
+								public void onSuccess(JSONArray rspArr) {
+									try {
+										JSONObject JSONUser = rspArr.getJSONObject(0);
+										temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+										temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+										temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+										temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
+									} catch (JSONException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
+									userAdapter.add(temp);
+									userAdapter.notifyDataSetChanged();
+								}
+							});
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
+					Log.d("JSON", rspObj.toString());
+				}
+				@Override
+				public void onFailure(Throwable e, String rsp) {
 					Log.d("JSON", e.getMessage());
 				}
-				*/
-                // Do something with the response
-		
-		  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-			Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-			double latitude = 38;
-			double longitude = -78;
-			if (current != null) {
-			latitude = current.getLatitude();
-			longitude = current.getLatitude();
-			}
-			UserList.clear();
-			Object[] friends = StaticUserInfo.getFbFriends().toArray();
-			String friendStr = "";
-			for (int i=0; i<friends.length; i++) {
-				friendStr += friends[i] + "/";
-			}
-			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
-					@Override
-					public void onSuccess(JSONObject rspObj) {
-						final User temp = new User();
-						JSONArray users = rspObj.names();
-						final JSONObject rspObjCpy = rspObj;
-						for (int i=0; i<users.length(); i++) {
-							try {
-								final String fb_id = users.getString(i);
-								RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
-									@Override
-									public void onSuccess(JSONArray rspArr) {
-										try {
-											JSONObject JSONUser = rspArr.getJSONObject(0);
-											temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-											temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-											temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-											temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
-										} catch (JSONException e) {
-											// TODO Auto-generated catch block
-											e.printStackTrace();
-										}
-										userAdapter.add(temp);
-										userAdapter.notifyDataSetChanged();
-									}
-								});
-							} catch (JSONException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						//JSONUser = rsp.getJSONObject(0);
-						Log.d("JSON", rspObj.toString());
-//						try {
-//							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-//							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-//							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-//						} catch (JSONException e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						userAdapter.add(temp);
-//						userAdapter.notifyDataSetChanged();
-					}
-					@Override
-					public void onFailure(Throwable e, String rsp) {
-						Log.d("JSON", e.getMessage());
-					}
-				});
-			//userAdapter.clear();
-			//userAdapter.notifyDataSetChanged();
+			});
         }
             
            /* @Override
