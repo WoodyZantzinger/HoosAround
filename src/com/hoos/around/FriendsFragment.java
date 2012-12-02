@@ -1,5 +1,6 @@
 package com.hoos.around;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -9,6 +10,13 @@ import java.util.List;
 import java.util.Vector;
 import java.util.zip.Inflater;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.*;
 
 import com.hoos.around.ImageThreadLoader.ImageLoadedListener;
@@ -201,59 +209,59 @@ public class FriendsFragment extends Fragment{
 			latitude = current.getLatitude();
 			longitude = current.getLatitude();
 			}
-			final JSONObjectWrapper closeLocations = new JSONObjectWrapper();
-			RestClient.get("/locations/gps/" + latitude + "/" + longitude, null, null, new JsonHttpResponseHandler() {
-				@Override
-				public void onSuccess(JSONObject rsp) {
-					closeLocations.setJsonObject(rsp);
-					Log.d("REST", rsp.toString());
-				}
-				@Override
-				public void onFailure(Throwable e, String rsp) {
-					Log.d("JSON", e.getMessage());
-				}
-			});
-			System.out.println(closeLocations.getJsonObject().toString());
 			UserList.clear();
 			Object[] friends = StaticUserInfo.getFbFriends().toArray();
+			String friendStr = "";
 			for (int i=0; i<friends.length; i++) {
-				final String friendFbId = friends[i].toString();
-				RestClient.get("/users/fb_id/" + friendFbId, null, null, new JsonHttpResponseHandler() {
+				friendStr += friends[i] + "/";
+			}
+			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
 					@Override
-					public void onSuccess(JSONArray rsp) {
-						User temp = new User();
-						JSONObject JSONUser=null;
-						try {
-							JSONUser = rsp.getJSONObject(0);
-						} catch (JSONException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
+					public void onSuccess(JSONObject rsp) {
+						final User temp = new User();
+						JSONArray users = rsp.names();
+						for (int i=0; i<users.length(); i++) {
+							try {
+								String fb_id = users.getString(i);
+								RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
+									@Override
+									public void onSuccess(JSONArray rsp) {
+										try {
+											JSONObject JSONUser = rsp.getJSONObject(0);
+											temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+											temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+											temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+										userAdapter.add(temp);
+										userAdapter.notifyDataSetChanged();
+									}
+								});
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
-						try {
-							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-//							if (UserList.add(temp)) {
-//								System.out.println(temp.user_first + " added");
-//							}
-//							else {
-//								System.out.println(temp.user_first + " not added");
-//							}
-						userAdapter.add(temp);
-						userAdapter.notifyDataSetChanged();
+						//JSONUser = rsp.getJSONObject(0);
+						Log.d("JSON", rsp.toString());
+//						try {
+//							temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
+//							temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
+//							temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
+//						} catch (JSONException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						userAdapter.add(temp);
+//						userAdapter.notifyDataSetChanged();
 					}
 					@Override
 					public void onFailure(Throwable e, String rsp) {
-						System.err.println(e.getMessage());
-						Log.d("JSON", rsp);
-						Log.d("JSON", RestClient.getAbsoluteUrl("/users/fb_id/"+friendFbId));
+						Log.d("JSON", e.getMessage());
 					}
 				});
-			}
 			//userAdapter.clear();
 			//userAdapter.notifyDataSetChanged();
         }

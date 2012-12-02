@@ -48,5 +48,8 @@ public class RestClient {
 			
 			return temp_schedule;
 	  }
+	  public static String getBaseUrl() {
+		  return BASE_URL;
+	  }
 
 }
