@@ -77,6 +77,7 @@ public class ScheduleFragment extends Fragment {
 	private TextView detail_time;
 	private Button new_class;
 	private Button new_location;
+	private Button remove_class;
 	private ListView ClassListView;
 	private ImageView locationImage;
 	
@@ -116,6 +117,58 @@ public class ScheduleFragment extends Fragment {
 
 	}
 
+	public void deleteClass(final int classID) {
+		
+	    AlertDialog confirm_dialog = new AlertDialog.Builder(this.getActivity()).create();
+	    confirm_dialog.setTitle("Are you sure?");
+	    confirm_dialog.setMessage("Do you want to remove " + selected_class.course_mnem + " From your schedule?");
+	    confirm_dialog.setButton(DialogInterface.BUTTON_POSITIVE, "Yes", new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface d, int buttonId) {
+	        	
+	        	dialog = ProgressDialog.show(ScheduleFragment.this.getActivity(), "", "Deleting Class...", true);
+	    		RestClient.get("/schedules/delete/" + StaticUserInfo.getUserID() + "/" + classID, null, null, new JsonHttpResponseHandler() {
+	    					@Override
+	    					public void onSuccess(JSONArray classes) {
+	    						//Delete Schedule
+	    						try {
+	    							Schedule new_schedule = RestClient.parse_schedule(classes);
+	    							scheduleAdapter.clear();
+	    							scheduleAdapter.addAll(new_schedule.courses);
+	    							scheduleAdapter.notifyDataSetChanged();
+	    							Log.d("JSON", "MSG RECIEVED");
+	    							dialog.dismiss();
+	    							setDetail(null);
+
+	    						} catch (JSONException e) {
+	    							// TODO Auto-generated catch block
+	    							Log.d("JSON", e.getMessage());
+	    							dialog.dismiss();
+	    						}
+	    					}
+
+	    					@Override
+	    					public void onFailure(Throwable e,String response) {
+	    						Log.d("JSON", response);
+	    						dialog.dismiss();
+	    					}
+
+	    				});
+
+	        }
+	    });
+	    confirm_dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "No", new DialogInterface.OnClickListener() {
+	        public void onClick(DialogInterface dialog, int buttonId) {
+	            
+	        }
+	    });
+	    confirm_dialog.setIcon(android.R.drawable.ic_dialog_alert);
+	    confirm_dialog.show();
+		
+		
+		
+
+	}
+	
 	public String formatDay(Class toFormat) {
 		String toReturn = "";
 		if(toFormat.monday) {toReturn = toReturn + " Monday"; }
@@ -127,40 +180,48 @@ public class ScheduleFragment extends Fragment {
 	}
 	
 	public void setDetail(final Class class_Detail) {
-		detail_header.setText(class_Detail.course_mnem);
-		String end_time = "";
-		String start_time = "";
-		SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
-		try {
-			Date start = formatter.parse(class_Detail.course_start);
-			Date end = formatter.parse(class_Detail.course_end);
-			formatter.applyPattern("hh:mm aa");
-			start_time = formatter.format(start);
-			end_time = formatter.format(end);
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if(class_Detail == null) {
+			selected_class = null;
+			detail_header.setText("");
+			locationImage.setImageBitmap(null);
+			detail_time.setText("<-- Select a Class");
+		} else {
+			selected_class = class_Detail;
+			detail_header.setText(class_Detail.course_mnem);
+			String end_time = "";
+			String start_time = "";
+			SimpleDateFormat formatter = new SimpleDateFormat("hh:mm:ss");
+			try {
+				Date start = formatter.parse(class_Detail.course_start);
+				Date end = formatter.parse(class_Detail.course_end);
+				formatter.applyPattern("hh:mm aa");
+				start_time = formatter.format(start);
+				end_time = formatter.format(end);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	
+	        Bitmap cachedImage = null;
+	        try {
+	          cachedImage = imageLoader.loadImage("http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, new ImageLoadedListener() {
+	        	  public void imageLoaded(Bitmap imageBitmap) {
+	        		  locationImage.setImageBitmap(imageBitmap);
+	        		  Log.e("IMAGE", "GOOD remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id);             
+	          	  }
+	          });
+	
+	        } catch (MalformedURLException e) {
+	          Log.e("IMAGE", "Bad remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, e);
+	        }
+	
+	        if( cachedImage != null ) {
+	        	locationImage.setImageBitmap(cachedImage);
+	        }
+			
+			
+			detail_time.setText(start_time + " till "+ end_time + " On " + formatDay(class_Detail));
 		}
-
-        Bitmap cachedImage = null;
-        try {
-          cachedImage = imageLoader.loadImage("http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, new ImageLoadedListener() {
-        	  public void imageLoaded(Bitmap imageBitmap) {
-        		  locationImage.setImageBitmap(imageBitmap);
-        		  Log.e("IMAGE", "GOOD remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id);             
-          	  }
-          });
-
-        } catch (MalformedURLException e) {
-          Log.e("IMAGE", "Bad remote image URL: " + "http://uva-cs4720-spinach.appspot.com/serve/" + class_Detail.location_id, e);
-        }
-
-        if( cachedImage != null ) {
-        	locationImage.setImageBitmap(cachedImage);
-        }
-		
-		
-		detail_time.setText(start_time + " till "+ end_time + " On " + formatDay(class_Detail));
 	}
 
 	public void addLocation(String name) {
@@ -605,10 +666,26 @@ public class ScheduleFragment extends Fragment {
 				}
 			});
 	
+			
+			remove_class = (Button) view.findViewById(R.id.scheduleDetailRemove);
+			remove_class.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					if(selected_class == null || selected_class.course_id == 0) {
+				        Toast toast = Toast.makeText(ScheduleFragment.this.getActivity(), "Select a class!", Toast.LENGTH_SHORT);
+				        toast.show();
+					} else {
+						deleteClass(selected_class.course_id);
+					}
+				}
+			});
+			
 			detail_header = (TextView) view.findViewById(R.id.scheduleDetailHeader);
 			detail_time = (TextView) view.findViewById(R.id.scheduleDetailTime);
 			locationImage = (ImageView) view.findViewById(R.id.location_image);
+
 	
+			detail_time.setText("<-- Select a Class");
+			
 			User temp_user = new User();
 			temp_user.user_id = StaticUserInfo.getUserID();
 	

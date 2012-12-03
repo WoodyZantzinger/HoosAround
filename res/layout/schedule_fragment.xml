@@ -98,13 +98,6 @@ android:weightSum="1.0" >
 			    android:text="Remove This Class"
 				android:layout_weight="1.0"
 			    />
-	       	<Button 
-			    android:id="@+id/scheduleDetailEdit"
-			    android:layout_width="0.0dip"
-			    android:layout_height="wrap_content"
-			    android:text="Edit This Class"
-				android:layout_weight="1.0"
-			    />
 	     </LinearLayout>
 	</RelativeLayout>
 </LinearLayout>
