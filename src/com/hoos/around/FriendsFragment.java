@@ -246,7 +246,7 @@ public class FriendsFragment extends Fragment{
 			}
 			final Calendar calendar = Calendar.getInstance();
 			final Date curr_time = calendar.getTime();
-			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/" + sdf.format(curr_time) + "/" + DayHelper.getDay(calendar.get(Calendar.DAY_OF_WEEK)) + friendStr, null, null, new JsonHttpResponseHandler() {
+			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/" + sdf.format(curr_time) + "/" + DayHelper.getDay(calendar.get(Calendar.DAY_OF_WEEK)) + "/" + friendStr, null, null, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray rsp) {
 						try {
