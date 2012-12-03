@@ -167,61 +167,62 @@ public class FriendsFragment extends Fragment{
     	    label.setText(tempClass.course_mnem + System.getProperty("line.separator") + tempClass.course_start + " - " + tempClass.course_end);
     	    return (convertView);
 	    }
-
 	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
-		scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);		
-	  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-		Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		double latitude = 38;
-		double longitude = -78;
-		if (current != null) {
-		latitude = current.getLatitude();
-		longitude = current.getLatitude();
-		}
-		UserList.clear();
-		Object[] friends = StaticUserInfo.getFbFriends().toArray();
-		String friendStr = "";
-		for (int i=0; i<friends.length; i++) {
-			friendStr += friends[i] + "/";
-		}
-		dialog = ProgressDialog.show(this.getActivity(), "", "Loading Friends...", true);
-		RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/13.00.00/monday/" + friendStr, null, null, new JsonHttpResponseHandler() {
-				@Override
-				public void onSuccess(JSONArray rsp) {
-					try {
-						ArrayList<User> users = new ArrayList<User>();
-						for (int i=0; i<rsp.length(); i++) {
-							User temp = new User();
-							temp.setDistance(rsp.getJSONArray(i).getDouble(1));
-							temp.setUser_first(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_first"));
-							temp.setUser_last(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_last"));
-							temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
-							users.add(temp);
-						}	
+		if(StaticUserInfo.isLoggedIn()) {
+			userAdapter = new UserAdapter(getActivity(), R.layout.friends_fragment_userlist);
+			scheduleAdapter = new ScheduleAdapter(getActivity(), R.layout.friends_fragment_schedulelist);		
+		  	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+			Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+			double latitude = 38;
+			double longitude = -78;
+			if (current != null) {
+				latitude = current.getLatitude();
+				longitude = current.getLongitude();
+			}
+			UserList.clear();
+			Object[] friends = StaticUserInfo.getFbFriends().toArray();
+			String friendStr = "";
+			for (int i=0; i<friends.length; i++) {
+				friendStr += friends[i] + "/";
+			}
+			dialog = ProgressDialog.show(this.getActivity(), "", "Loading Friends...", true);
+			Log.d("FRND","Loading...");
+			//RestClient.get("/users/view", null, null, new JsonHttpResponseHandler() {
+			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/13.00.00/monday/" + friendStr, null, null, new JsonHttpResponseHandler() {
+					@Override
+					public void onSuccess(JSONArray rsp) {
+						try {
+							ArrayList<User> users = new ArrayList<User>();
+							for (int i=0; i<rsp.length(); i++) {
+								User temp = new User();
+								temp.setDistance(rsp.getJSONArray(i).getDouble(1));
+								temp.setUser_first(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_first"));
+								temp.setUser_last(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_last"));
+								temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
+								users.add(temp);
+							}	
 							userAdapter.addAll(users);
 							userAdapter.notifyDataSetChanged();
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 							dialog.dismiss();
-					} catch (JSONException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						}
+						dialog.dismiss();
+						Log.d("JSON", rsp.toString());
+					}
+					
+					@Override
+					public void onFailure(Throwable e, String rsp) {
+						Log.d("JSON", e.getMessage());
 						dialog.dismiss();
 					}
-
-					Log.d("JSON", rsp.toString());
-				}
-				@Override
-				public void onFailure(Throwable e, String rsp) {
-					Log.d("JSON", e.getMessage());
-					dialog.dismiss();
-				}
-			});
-
+				});
+			}
         }
 	
 	@Override
