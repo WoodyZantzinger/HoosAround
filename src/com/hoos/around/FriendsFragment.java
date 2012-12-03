@@ -63,7 +63,7 @@ public class FriendsFragment extends Fragment{
 	public void LoadSchedule(User user) {
 		dialog = ProgressDialog.show(this.getActivity(), "", 
                 "Loading Schedule...", true);
-		RestClient.get("schedules/id/" + user.user_id, null, null, new JsonHttpResponseHandler() {
+		RestClient.get("schedules/today/" + user.user_id + "/monday", null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray classes) {
                 // Grab A Schedule
@@ -124,7 +124,7 @@ public class FriendsFragment extends Fragment{
     	    	convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.friends_fragment_userlist, parent, false);
     	    }
 	    	TextView label = (TextView)convertView.findViewById(R.id.name);
-    	    label.setText(tempUser.user_first + " " + tempUser.user_last + " - " + ((Double)(tempUser.distance+.5)).intValue() + " meters away");
+    	    label.setText(tempUser.user_first + " " + tempUser.user_last + System.getProperty("line.separator") + ((Double)(tempUser.distance+.5)).intValue() + " meters away");
     	    Log.d("VIEW", tempUser.user_first + " " + tempUser.user_last + " " + position);
     	    return (convertView);
 	    }
@@ -172,7 +172,7 @@ public class FriendsFragment extends Fragment{
 	        }
 
 	        
-    	    label.setText(tempClass.course_mnem);
+    	    label.setText(tempClass.course_mnem + System.getProperty("line.separator") + tempClass.course_start + " - " + tempClass.course_end);
     	    return (convertView);
 	    }
 
