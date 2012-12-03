@@ -124,8 +124,8 @@ public class FriendsFragment extends Fragment{
     	    	convertView = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.friends_fragment_userlist, parent, false);
     	    }
 	    	TextView label = (TextView)convertView.findViewById(R.id.name);
-    	    label.setText(tempUser.user_first + " " + tempUser.user_last + " - " + tempUser.distance + " mi away");
-    	    Log.d("VIEW", tempUser.user_first + " " + tempUser.user_last);
+    	    label.setText(tempUser.user_first + " " + tempUser.user_last + " - " + ((Double)(tempUser.distance+.5)).intValue() + " meters away");
+    	    Log.d("VIEW", tempUser.user_first + " " + tempUser.user_last + " " + position);
     	    return (convertView);
 	    }
 
@@ -198,38 +198,31 @@ public class FriendsFragment extends Fragment{
 		for (int i=0; i<friends.length; i++) {
 			friendStr += friends[i] + "/";
 		}
-		RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/11.10.00/tuesday/" + friendStr, null, null, new JsonHttpResponseHandler() {
+		RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/13.00.00/monday/" + friendStr, null, null, new JsonHttpResponseHandler() {
 				@Override
-				public void onSuccess(JSONObject rspObj) {
-					final User temp = new User();
-					JSONArray users = rspObj.names();
-					final JSONObject rspObjCpy = rspObj;
-					for (int i=0; i<users.length(); i++) {
-						try {
-							final String fb_id = users.getString(i);
-							RestClient.get("/users/fb_id/" + fb_id, null, null, new JsonHttpResponseHandler() {
-								@Override
-								public void onSuccess(JSONArray rspArr) {
-									try {
-										JSONObject JSONUser = rspArr.getJSONObject(0);
-										temp.user_id = JSONUser.optJSONObject("User").getInt("user_id");
-										temp.user_first = JSONUser.optJSONObject("User").getString("user_first");
-										temp.user_last = JSONUser.getJSONObject("User").getString("user_last");
-										temp.distance = Double.parseDouble(rspObjCpy.get(fb_id).toString());
-									} catch (JSONException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-									userAdapter.add(temp);
-									userAdapter.notifyDataSetChanged();
-								}
-							});
-						} catch (JSONException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				public void onSuccess(JSONArray rsp) {
+					try {
+						ArrayList<User> users = new ArrayList<User>();
+						for (int i=0; i<rsp.length(); i++) {
+							User temp = new User();
+							temp.setDistance(rsp.getJSONArray(i).getDouble(1));
+							temp.setUser_first(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_first"));
+							temp.setUser_last(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_last"));
+							temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
+							users.add(temp);
+							System.out.println("1user " + i + " " + temp.user_first);
+						}	
+							for (int i=0; i<users.size(); i++) {
+								System.out.println("2user" + i + " " + users.get(i).user_first);
+							}
+							userAdapter.addAll(users);
+							userAdapter.notifyDataSetChanged();
+					} catch (JSONException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-					Log.d("JSON", rspObj.toString());
+
+					Log.d("JSON", rsp.toString());
 				}
 				@Override
 				public void onFailure(Throwable e, String rsp) {
@@ -238,15 +231,6 @@ public class FriendsFragment extends Fragment{
 			});
 
         }
-            
-           /* @Override
-            public void onFailure(Throwable e, String response) {
-				Log.d("JSON", response);
-				Log.d("JSON", RestClient.getAbsoluteUrl("courses/view/"));
-            }
-            
-        });	
-	}*/
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {

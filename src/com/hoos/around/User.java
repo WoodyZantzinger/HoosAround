@@ -24,4 +24,7 @@ public class User {
 	public void setUser_last(String user_last) {
 		this.user_last = user_last;
 	}
+	public void setDistance(double double1) {
+		distance = double1;		
+	}
 }
