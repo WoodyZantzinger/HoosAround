@@ -4,6 +4,7 @@ public class User {
 	public int user_id;
 	public String user_first;
 	public String user_last;
+	public int facebook_id;
 	public double distance;
 	
 	public int getUser_id() {

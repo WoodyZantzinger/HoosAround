@@ -38,6 +38,15 @@ android:weightSum="1.0" >
 	        android:background="@drawable/drop_shadow"
 	        android:layout_marginRight="20dp"
 	        />
+   	    <TextView 
+		    android:id="@+id/currentstatus"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="@style/sectionHeader"
+		    android:layout_toRightOf="@id/shadow"
+		    android:layout_alignParentTop="true"
+		    android:textSize="40dp"
+		    />
 	    <TextView 
 		    android:id="@+id/scheduleListHeader"
 		    android:layout_width="wrap_content"
@@ -45,7 +54,7 @@ android:weightSum="1.0" >
 		    style="@style/sectionHeader"
 		    android:text="Schedule"
 		    android:layout_toRightOf="@id/shadow"
-		    android:layout_alignParentTop="true"
+		    android:layout_below="@id/currentstatus"
 		    />
 	    <ListView
 			android:id="@+id/classList"

@@ -3,8 +3,12 @@ package com.hoos.around;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
@@ -30,6 +34,7 @@ import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,10 +64,10 @@ public class FriendsFragment extends Fragment{
 	private ListView UserListView;
 	private ListView ClassListView;
 	private ProgressDialog dialog;
+	private TextView Current_Location;
 	
-	public void LoadSchedule(User user) {
-		dialog = ProgressDialog.show(this.getActivity(), "", 
-                "Loading Schedule...", true);
+	public void LoadSchedule(final User user) {
+		dialog = ProgressDialog.show(this.getActivity(), "", "Loading Schedule...", true);
 		RestClient.get("schedules/today/" + user.user_id + "/monday", null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(JSONArray classes) {
@@ -83,7 +88,7 @@ public class FriendsFragment extends Fragment{
 						temp.location_id = JSONSchedule.getJSONArray("Course").getJSONObject(0).getInt("location_id");
 						schedule.courses.add(temp);
 					}
-					
+
 					scheduleAdapter.clear();
 					scheduleAdapter.addAll(schedule.courses);
 					scheduleAdapter.notifyDataSetChanged();
@@ -96,6 +101,8 @@ public class FriendsFragment extends Fragment{
 				}
             }
             
+            
+            
             @Override
             public void onFailure(Throwable e, String response) {
 				Log.d("JSON", response);
@@ -103,7 +110,52 @@ public class FriendsFragment extends Fragment{
 				dialog.dismiss();
             }
             
-        });	
+        });
+		
+		RestClient.get("users/lastLocation/" + user.facebook_id + "/17.10.00/monday", null, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(JSONObject JSONClass) {
+            	try{
+					final Class temp = new Class();
+					temp.course_start = JSONClass.getString("course_start");
+					temp.course_end = JSONClass.getString("course_end");
+					temp.course_mnem = JSONClass.getString("course_mnem");
+					temp.location_id = JSONClass.getInt("location_id");
+					
+					String pattern = "HH:mm:ss";
+					Time now = new Time();
+					now.setToNow();
+		            SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+		            try {
+		                Date class_end = sdf.parse(temp.course_end);
+		                //Date current_time = sdf.parse(now.hour + ":" + now.minute + ":" + now.second);
+		                Date current_time = sdf.parse("17:10:00");
+
+		                // Outputs -1 as class_End is before NOW
+		                if(class_end.before(current_time)) {
+		                	Current_Location.post(new Runnable() {
+		                	    public void run() {
+		                	    	Current_Location.setText(user.user_first + " Last Left " + temp.course_mnem);
+		                	    } 
+		                	});
+		                } else {
+		                	Current_Location.post(new Runnable() {
+		                	    public void run() {
+				                	Current_Location.setText(user.user_first + " Should be in " + temp.course_mnem);
+		                	    } 
+		                	});
+		                }
+
+		            } catch (ParseException e){
+		                // Exception handling goes here
+		            }
+					
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					Log.d("JSON", e.getMessage());
+				}
+            }
+		});
 	}
 	
 	public class UserAdapter extends ArrayAdapter<User>{
@@ -171,8 +223,15 @@ public class FriendsFragment extends Fragment{
         	      image.setImageBitmap(cachedImage);
 	        }
 
-	        
-    	    label.setText(tempClass.course_mnem + System.getProperty("line.separator") + tempClass.course_start + " - " + tempClass.course_end);
+			String pattern = "HH:mm:ss";
+            SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+            SimpleDateFormat sdf_output = new SimpleDateFormat("hh:mm aa");
+    	    try {
+				label.setText(tempClass.course_mnem + System.getProperty("line.separator") + sdf_output.format(sdf.parse(tempClass.course_start)) + " - " + sdf_output.format(sdf.parse(tempClass.course_end)));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
     	    return (convertView);
 	    }
 
@@ -213,6 +272,7 @@ public class FriendsFragment extends Fragment{
 								temp.setUser_first(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_first"));
 								temp.setUser_last(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_last"));
 								temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
+								temp.facebook_id = (rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("fb_id"));
 								users.add(temp);
 								System.out.println("1user " + i + " " + temp.user_first);
 							}	
@@ -254,6 +314,8 @@ public class FriendsFragment extends Fragment{
 		
 		if(StaticUserInfo.isLoggedIn()) {
 			View view = inflater.inflate(R.layout.friends_fragment, container, false);
+			
+			Current_Location = (TextView)view.findViewById(R.id.currentstatus);
 			
 			UserListView = (ListView)view.findViewById(R.id.friendsList);
 			UserListView.setAdapter(userAdapter);
