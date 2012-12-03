@@ -40,6 +40,8 @@ public class HomeFragment extends Fragment{
     AsyncFacebookRunner mAsyncRunner = new AsyncFacebookRunner(facebook);
     String fb_id = "";
     Boolean	Login_Attempted = false;
+    Button fb_button;
+    Button fb_button2;
     
 	private ProgressDialog dialog;
 	
@@ -58,7 +60,41 @@ public class HomeFragment extends Fragment{
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.home_fragment, container, false);
 		
-		Button fb_button = (Button)view.findViewById(R.id.facebook_button);
+		fb_button2 = (Button)view.findViewById(R.id.facebook_button2);
+		fb_button2.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				mAsyncRunner.logout(HomeFragment.this.getActivity(), new RequestListener() {
+					  @Override
+					  public void onComplete(String response, Object state) {
+						  	StaticUserInfo.isLoggedIn(false);
+			            	fb_button2.post(new Runnable() {
+		                	    public void run() {
+					            	fb_button.setVisibility(View.VISIBLE);
+					            	fb_button2.setVisibility(View.INVISIBLE);
+		                	    } 
+		                	});
+					  }
+					  	
+					  @Override
+					  public void onIOException(IOException e, Object state) {}
+					  
+					  @Override
+					  public void onFileNotFoundException(FileNotFoundException e,
+					        Object state) {}
+					  
+					  @Override
+					  public void onMalformedURLException(MalformedURLException e,
+					        Object state) {}
+					  
+					  @Override
+					  public void onFacebookError(FacebookError e, Object state) {}
+					});
+			}
+		});
+		
+		fb_button = (Button)view.findViewById(R.id.facebook_button);
 		fb_button.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -69,6 +105,12 @@ public class HomeFragment extends Fragment{
 				            @Override
 				            public void onComplete(Bundle values) {
 				            	Log.d("FB","Facebook Success!");
+				            	fb_button2.post(new Runnable() {
+			                	    public void run() {
+						            	fb_button2.setVisibility(View.VISIBLE);
+						            	fb_button.setVisibility(View.INVISIBLE);
+			                	    } 
+			                	});
 				        		dialog = ProgressDialog.show(HomeFragment.this.getActivity(), "", 
 				                        "Loading User Info...", true);
 				            	StaticUserInfo.isLoggedIn(true);
@@ -102,6 +144,14 @@ public class HomeFragment extends Fragment{
 				}
 			}
 		});
+		
+		if(StaticUserInfo.isLoggedIn()) {
+	    	fb_button2.setVisibility(View.VISIBLE);
+	    	fb_button.setVisibility(View.INVISIBLE);
+		} else {
+	    	fb_button.setVisibility(View.VISIBLE);
+	    	fb_button2.setVisibility(View.INVISIBLE);
+		}
 		
 		return view;
 	}

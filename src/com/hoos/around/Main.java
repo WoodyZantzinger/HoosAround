@@ -72,7 +72,7 @@ public class Main extends Activity {
         actionbar.addTab(HomeTab);
         actionbar.addTab(FriendsTab);
         actionbar.addTab(ScheduleTab);
-        actionbar.addTab(SettingsTab);
+        //actionbar.addTab(SettingsTab);
 		
 		FragmentTransaction ft = getFragmentManager().beginTransaction();
 		HomeFragment frag = (HomeFragment)Fragment.instantiate(this, HomeFragment.class.getName());

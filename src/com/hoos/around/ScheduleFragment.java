@@ -99,7 +99,7 @@ public class ScheduleFragment extends Fragment {
 			super(context, layoutResourceId);
 			this.context = context;
 		}
-
+		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			final Class tempClass = this.getItem(position);
@@ -477,10 +477,10 @@ public class ScheduleFragment extends Fragment {
 		scheduleAdapter = new ScheduleAdapter(getActivity(),
 				R.layout.friends_fragment_schedulelist);
 		
-		
+		/*
         Toast toast = Toast.makeText(this.getActivity(), "User ID = " + StaticUserInfo.getUserID(), Toast.LENGTH_SHORT);
         toast.show();
-
+		 */
 	}
 
 	@Override
@@ -611,6 +611,12 @@ public class ScheduleFragment extends Fragment {
 					// ADD A NEW CLASS, AND ADD TO SCHEDULE
 					Button close_btn2 = (Button) addDialog.findViewById(R.id.submit_button2);
 					close_btn2.setOnClickListener(new View.OnClickListener() {
+						
+						public int bToi(Boolean b) {
+							int val = b? 1 : 0;
+							return val;
+						}
+						
 						public void onClick(View v) {
 							//POPULATE WITH ALL THE DATA
 							String mnem = ((EditText)addDialog.findViewById(R.id.class_name)).getText().toString();
@@ -622,7 +628,7 @@ public class ScheduleFragment extends Fragment {
 							String URL = "";
 							try {
 								URL = "courses/add/" + URLEncoder.encode(mnem, "UTF8").replace("+", "%20") + "/" + locationid + "/" + URLEncoder.encode(start, "UTF8") + "/" + URLEncoder.encode(end, "UTF8");
-								URL = URL + "/" + ((CheckBox)addDialog.findViewById(R.id.monday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.tuesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.wednesday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.thursday)).isChecked() + "/" + ((CheckBox)addDialog.findViewById(R.id.friday)).isChecked();
+								URL = URL + "/" + bToi(((CheckBox)addDialog.findViewById(R.id.monday)).isChecked()) + "/" + bToi(((CheckBox)addDialog.findViewById(R.id.tuesday)).isChecked()) + "/" + bToi(((CheckBox)addDialog.findViewById(R.id.wednesday)).isChecked()) + "/" + bToi(((CheckBox)addDialog.findViewById(R.id.thursday)).isChecked()) + "/" + bToi(((CheckBox)addDialog.findViewById(R.id.friday)).isChecked());
 								URL = URL + "/" + StaticUserInfo.getUserID();
 								Log.d("ADD", URL);
 							} catch (UnsupportedEncodingException e1) {

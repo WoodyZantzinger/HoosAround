@@ -2,6 +2,7 @@ package com.hoos.around;
 
 import java.util.ArrayList;
 
+import org.apache.http.client.params.ClientPNames;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,6 +18,9 @@ public class RestClient {
 	  private static AsyncHttpClient client = new AsyncHttpClient();
 
 	  public static void get(String url, RequestParams params, Handler handler, AsyncHttpResponseHandler responseHandler) {
+		  
+		  client.getHttpClient().getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
+		  
 		  Log.d("REST", "getting url " + url);
 	      client.get(getAbsoluteUrl(url), params, responseHandler);
 	  }
