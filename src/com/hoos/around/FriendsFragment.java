@@ -48,16 +48,6 @@ import android.widget.TextView;
 
 public class FriendsFragment extends Fragment{
 	
-	/*
-	 * 	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-		Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		latitude = current.getLatitude();
-		longitude = current.getLatitude();
-		
-		String GPS_URL = "locations/gps/" + latitude  + "/" + longitude + "/1";
-	 * 
-	 */
-	
 	private ArrayList<User> UserList = new ArrayList<User>();
 	private UserAdapter userAdapter;
 	private ScheduleAdapter scheduleAdapter;
@@ -234,7 +224,6 @@ public class FriendsFragment extends Fragment{
 			}
     	    return (convertView);
 	    }
-
 	}
 	
 	@Override
@@ -263,7 +252,6 @@ public class FriendsFragment extends Fragment{
 			RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/13.00.00/monday/" + friendStr, null, null, new JsonHttpResponseHandler() {
 					@Override
 					public void onSuccess(JSONArray rsp) {
-						Log.d("FRND","Success!...");
 						try {
 							ArrayList<User> users = new ArrayList<User>();
 							for (int i=0; i<rsp.length(); i++) {
@@ -274,11 +262,7 @@ public class FriendsFragment extends Fragment{
 								temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
 								temp.facebook_id = (rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("fb_id"));
 								users.add(temp);
-								System.out.println("1user " + i + " " + temp.user_first);
 							}	
-							for (int i=0; i<users.size(); i++) {
-								System.out.println("2user" + i + " " + users.get(i).user_first);
-							}
 							userAdapter.addAll(users);
 							userAdapter.notifyDataSetChanged();
 						} catch (JSONException e) {
@@ -288,11 +272,6 @@ public class FriendsFragment extends Fragment{
 						}
 						dialog.dismiss();
 						Log.d("JSON", rsp.toString());
-					}
-					
-					@Override
-					public void onSuccess(JSONObject rsp) {
-						Log.d("YES", "YYYEEYEYSYSHDYHFDHF");
 					}
 					
 					@Override
