@@ -477,10 +477,10 @@ public class ScheduleFragment extends Fragment {
 		scheduleAdapter = new ScheduleAdapter(getActivity(),
 				R.layout.friends_fragment_schedulelist);
 		
-		
+		/*
         Toast toast = Toast.makeText(this.getActivity(), "User ID = " + StaticUserInfo.getUserID(), Toast.LENGTH_SHORT);
         toast.show();
-
+		 */
 	}
 
 	@Override
