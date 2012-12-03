@@ -4,7 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Vector;
@@ -42,16 +44,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class FriendsFragment extends Fragment{
-	
-	/*
-	 * 	LocationManager lm = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
-		Location current = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		latitude = current.getLatitude();
-		longitude = current.getLatitude();
-		
-		String GPS_URL = "locations/gps/" + latitude  + "/" + longitude + "/1";
-	 * 
-	 */
 	
 	private ArrayList<User> UserList = new ArrayList<User>();
 	private UserAdapter userAdapter;
@@ -211,11 +203,7 @@ public class FriendsFragment extends Fragment{
 							temp.setUser_last(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getString("user_last"));
 							temp.setUser_id(rsp.getJSONArray(i).getJSONArray(0).getJSONObject(0).getJSONObject("User").getInt("user_id"));
 							users.add(temp);
-							System.out.println("1user " + i + " " + temp.user_first);
 						}	
-							for (int i=0; i<users.size(); i++) {
-								System.out.println("2user" + i + " " + users.get(i).user_first);
-							}
 							userAdapter.addAll(users);
 							userAdapter.notifyDataSetChanged();
 							dialog.dismiss();
