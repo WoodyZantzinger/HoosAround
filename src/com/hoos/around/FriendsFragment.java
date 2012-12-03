@@ -198,6 +198,7 @@ public class FriendsFragment extends Fragment{
 		for (int i=0; i<friends.length; i++) {
 			friendStr += friends[i] + "/";
 		}
+		dialog = ProgressDialog.show(this.getActivity(), "", "Loading Friends...", true);
 		RestClient.get("/users/closestFriends/" + latitude + "/" + longitude + "/13.00.00/monday/" + friendStr, null, null, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONArray rsp) {
@@ -217,9 +218,11 @@ public class FriendsFragment extends Fragment{
 							}
 							userAdapter.addAll(users);
 							userAdapter.notifyDataSetChanged();
+							dialog.dismiss();
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						dialog.dismiss();
 					}
 
 					Log.d("JSON", rsp.toString());
@@ -227,6 +230,7 @@ public class FriendsFragment extends Fragment{
 				@Override
 				public void onFailure(Throwable e, String rsp) {
 					Log.d("JSON", e.getMessage());
+					dialog.dismiss();
 				}
 			});
 
