@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 public class Main extends Activity {
 	
-	private HomeFragment ReturnFragment;
+	private Fragment ReturnFragment;
 	
 	class MyTabsListener implements ActionBar.TabListener {
 		public Fragment fragment;
@@ -85,8 +85,14 @@ public class Main extends Activity {
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    super.onActivityResult(requestCode, resultCode, data);
 
-	    if (ReturnFragment != null)       
-	    	ReturnFragment.ActivityResult(requestCode, resultCode, data);
+	    if (ReturnFragment != null) {
+	    	if (requestCode == ScheduleFragment.SELECT_IMAGE) {
+	    		((ScheduleFragment)ReturnFragment).onActivityResult(requestCode, resultCode, data);
+	    	} else {
+	    		((HomeFragment)ReturnFragment).ActivityResult(requestCode, resultCode, data);
+	    	}
+	    }
+	    	
 	}
 	
 	@Override
@@ -95,7 +101,7 @@ public class Main extends Activity {
 
 	    String fragmentSimpleName = fragment.getClass().getSimpleName();
 
-	    if (fragmentSimpleName.equals("HomeFragment"))
-	        ReturnFragment = (HomeFragment)fragment;        
+	    if (fragmentSimpleName.equals("HomeFragment") || fragmentSimpleName.equals("ScheduleFragment"))
+	        ReturnFragment = fragment;    
 	}
 }
