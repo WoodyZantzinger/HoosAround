@@ -1,34 +1,14 @@
 package com.hoos.around;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Vector;
-import java.util.zip.Inflater;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.*;
-
 import com.hoos.around.ImageThreadLoader.ImageLoadedListener;
 import com.loopj.android.http.JsonHttpResponseHandler;
-
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -82,7 +62,6 @@ public class FriendsFragment extends Fragment{
 					dialog.dismiss();
 					
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					Log.d("JSON", e.getMessage());
 					dialog.dismiss();
 				}
@@ -208,7 +187,6 @@ public class FriendsFragment extends Fragment{
 							userAdapter.addAll(users);
 							userAdapter.notifyDataSetChanged();
 						} catch (JSONException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 							dialog.dismiss();
 						}
@@ -266,21 +244,5 @@ public class FriendsFragment extends Fragment{
 		TextView view = (TextView) getView().findViewById(R.id.header);
 		view.setText(item);
 	}
-	
-	private class JSONObjectWrapper {
-		JSONObject json = new JSONObject();
 
-		public void JSONObjectWrapper(JSONObject obj) {
-			json = obj;
-		}
-		public void setJsonObject(JSONObject obj) {
-			json = obj;
-		}
-		public JSONObject getJsonObject() {
-			return json;
-		}
-		public String toString() {
-			return json.toString();
-		}
-	}
 }
